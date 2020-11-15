@@ -1,0 +1,23 @@
+{
+  "name": "@cwi/hash-brown",
+  "version": "0.1.0",
+  "description": "Secure UHRP server used to store files",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/p2ppsr/hash-brown.git"
+  },
+  "keywords": [
+    "file",
+    "uhrp"
+  ],
+  "author": "Benjamin Purtzer",
+  "license": "PROPRIETARY",
+  "bugs": {
+    "url": "https://github.com/p2ppsr/hash-brown/issues"
+  },
+  "homepage": "https://github.com/p2ppsr/hash-brown#readme"
+}
