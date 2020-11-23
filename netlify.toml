@@ -1,0 +1,21 @@
+[build]
+  functions = "src"
+
+[[headers]]
+  for = "/.well-known/cwi-secret-server"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Content-Type = "application/json"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
+    Access-Control-Allow-Methods = "*"
+    Content-Type = "application/json"
+
+[dev]
+  command = "npm run start"
+  port = 8888
+  publish = "public"
