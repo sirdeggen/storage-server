@@ -15,6 +15,7 @@ module.exports = {
   type: 'post',
   path: '/upload/blob',
   knex,
+  middleware: multerMid.single('file'),
   func: async (req, res) => {
     // Get needed fields
     const { reference_id } = req.body
@@ -49,8 +50,7 @@ module.exports = {
     // G
 
     res.send('hello')
-  },
-  middleware: multerMid.single('file')
+  }
 }
 
 // After we generate reference number and

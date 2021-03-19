@@ -1,0 +1,5 @@
+dispatch:
+  - url: "staging-hashbrown.babbage.systems/*"
+    service: staging
+  - url: "hashbrown.babbage.systems/*"
+    service: default

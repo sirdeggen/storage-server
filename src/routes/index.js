@@ -1,1 +1,3 @@
-module.exports = [require('./upload-blob')]
+module.exports = [
+  require('./upload-blob')
+]
