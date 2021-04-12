@@ -1,5 +1,5 @@
 const multer = require('multer')
-const uploadSingleFile = require('../utils/media/uploadSingleFile')
+const uploadSingleFile = require('../utils/uploadSingleFile')
 const knex =
   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
     ? require('knex')(require('../../knexfile.js').production)
@@ -9,7 +9,6 @@ const multerMid = multer({
   storage: multer.memoryStorage()
 })
 const crypto = require('crypto')
-const fs = require('fs')
 
 module.exports = {
   type: 'post',

@@ -8,7 +8,7 @@ module.exports = {
       : undefined,
     useNullAsDefault: true,
     migrations: {
-      directory: './src/src/migrations'
+      directory: './src/migrations'
     }
   },
   development: {
@@ -20,5 +20,8 @@ module.exports = {
     migrations: {
       directory: './src/migrations'
     }
+    // seeds: {
+    //   directory: './src/seeds'
+    // }
   }
 }

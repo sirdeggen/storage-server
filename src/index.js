@@ -16,7 +16,6 @@ const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
 app.use(bodyparser.json())
 app.use((req, res, next) => {
-  // The 'x-forwarded-proto' check is for Heroku
   if (
     !req.secure &&
     req.get('x-forwarded-proto') !== 'https' &&
@@ -71,7 +70,7 @@ routes.forEach((route) => {
 })
 
 app.use((req, res) => {
-  console.log('404', req)
+  console.log('404', req.url)
   res.status(404).json({
     status: 'error',
     error: 'Route not found.'
@@ -79,5 +78,5 @@ app.use((req, res) => {
 })
 
 app.listen(HTTP_PORT, () => {
-  console.log('Hash brown listening on port', HTTP_PORT)
+  console.log('Hashbrown listening on port', HTTP_PORT)
 })
