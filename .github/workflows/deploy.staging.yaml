@@ -13,6 +13,7 @@ jobs:
         run: "./scripts/mkenv.sh"
         env:
           NODE_ENV: ${{ secrets.STAGING_NODE_ENV }}
+          HOSTING_DOMAIN: ${{ secrets.STAGING_HOSTING_DOMAIN }}
           ROUTING_PREFIX: ${{ secrets.STAGING_ROUTING_PREFIX }}
           KNEX_DB_CONNECTION: ${{ secrets.STAGING_KNEX_DB_CONNECTION }}
           KNEX_DB_CLIENT: ${{ secrets.STAGING_KNEX_DB_CLIENT }}
@@ -23,6 +24,7 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.STAGING_GCP_PROJECT_ID }}
           UHRP_HOST_PRIVATE_KEY: ${{ secrets.STAGING_UHRP_HOST_PRIVATE_KEY }}
           MIN_HOSTING_MINUTES: ${{ secrets.STAGING_MIN_HOSTING_MINUTES }}
+          SERVER_XPUB: ${{ secrets.STAGING_SERVER_XPUB }}
       # - name: Use Node.js
       #   uses: actions/setup-node@v1
       #   with:

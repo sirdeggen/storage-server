@@ -1,3 +1,5 @@
 module.exports = [
-  require('./upload-blob')
+  require('./invoice'),
+  require('./upload'),
+  require('./migrate')
 ]
