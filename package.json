@@ -7,6 +7,7 @@
   "author": "Peer-to-peer Privacy Systems Research, LLC",
   "license": "PROPRIETARY",
   "dependencies": {
+    "@cwi/remembrance": "^0.1.1",
     "@google-cloud/debug-agent": "^5.1.3",
     "@google-cloud/storage": "^5.5.0",
     "axios": "^0.21.1",

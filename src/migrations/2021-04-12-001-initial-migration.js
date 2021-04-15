@@ -21,6 +21,7 @@ exports.up = async knex => {
     table.integer('numberOfMinutesPurchased')
     table.boolean('paid')
     table.boolean('redeemedByServerOperator')
+    table.string('advertisementTXID')
     table.integer('fileId').unsigned().references('fileId').inTable('file')
   })
 }

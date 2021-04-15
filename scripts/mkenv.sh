@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# Create .env file
 echo "Generating .env file..."
 echo "NODE_ENV=$NODE_ENV" > .env
 echo "HOSTING_DOMAIN=$HOSTING_DOMAIN" >> .env
@@ -13,5 +15,8 @@ echo "GCP_BUCKET_NAME=$GCP_BUCKET_NAME" >> .env
 echo "GCP_PROJECT_ID=$GCP_PROJECT_ID" >> .env
 echo "SERVER_XPUB=$SERVER_XPUB" >> .env
 
+# Create credential file
 echo "Generating storage credential file..."
 echo "$GCP_STORAGE_CREDS" > storage-creds.json
+
+# Create deployment file with needed variables

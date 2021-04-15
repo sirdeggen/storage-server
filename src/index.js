@@ -3,6 +3,9 @@ const express = require('express')
 const bodyparser = require('body-parser')
 const prettyjson = require('prettyjson')
 const routes = require('./routes')
+const bsv = require('bsv')
+
+const { UHRP_HOST_PRIVATE_KEY } = process.env
 
 if (process.env.NODE_ENV !== 'development') {
   require('@google-cloud/debug-agent').start({
@@ -79,4 +82,10 @@ app.use((req, res) => {
 
 app.listen(HTTP_PORT, () => {
   console.log('Hashbrown listening on port', HTTP_PORT)
+  const addr = bsv
+    .PrivateKey
+    .fromString(UHRP_HOST_PRIVATE_KEY)
+    .toAddress()
+    .toString()
+  console.log(`UHRP Host Address: ${addr}`)
 })

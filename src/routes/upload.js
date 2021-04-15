@@ -23,7 +23,6 @@ module.exports = {
         description: 'The file is missing.'
       })
     }
-    console.log(req.file)
 
     const {
       referenceNumber,
@@ -31,23 +30,23 @@ module.exports = {
       inputProofs
     } = req.body
 
-    // // Handle missing fields
-    // if (!referenceNumber) {
-    //   return res.status(400).json({
-    //     status: 'error',
-    //     code: 'ERR_NO_REF',
-    //     description:
-    //       'Missing reference number. Please use /invoice to generate a reference number.'
-    //   })
-    // }
-    // if (!transactionHex) {
-    //   return res.status(400).json({
-    //     status: 'error',
-    //     code: 'ERR_NO_TX',
-    //     description:
-    //       'Provide a signed, ready-to-broadcast Bitcoin transaction paying for this file to be hosted.'
-    //   })
-    // }
+    // Handle missing fields
+    if (!referenceNumber) {
+      return res.status(400).json({
+        status: 'error',
+        code: 'ERR_NO_REF',
+        description:
+          'Missing reference number. Please use /invoice to generate a reference number.'
+      })
+    }
+    if (!transactionHex) {
+      return res.status(400).json({
+        status: 'error',
+        code: 'ERR_NO_TX',
+        description:
+          'Provide a signed, ready-to-broadcast Bitcoin transaction paying for this file to be hosted.'
+      })
+    }
     // if (!inputProofs || !Array.isArray(inputProofs)) {
     //   return res.status(400).json({
     //     status: 'error',
@@ -70,11 +69,34 @@ module.exports = {
       })
     }
 
-    uploadSingleFile({
+    const [file] = await knex('file').select().where({
+      fileId: transaction.fileId
+    })
+
+    // Validate the length of the file uploaded is the same as the length invoiced for
+    if (file.fileSize !== req.file.size) {
+      return res.status(400).json({
+        status: 'error',
+        code: 'ERR_SIZE_MISMATCH',
+        description: 'The size of the file uploaded does not match the size specified in the invoice.'
+      })
+    }
+
+    // Validate that the transaction contains the required outputs
+
+    // Validate the transaction with mAPI
+
+    const { adTXID, publicURL, hash } = await uploadSingleFile({
       file: req.file,
       fileId: transaction.fileId,
       numberOfMinutesPurchased: transaction.numberOfMinutesPurchased,
       knex
     })
+
+    await knex('transaction').where({ referenceNumber }).update({
+      advertisementTXID: adTXID
+    })
+
+    res.status(200).json({ publicURL, hash, published: true })
   }
 }

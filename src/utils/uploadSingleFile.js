@@ -50,16 +50,18 @@ module.exports = ({
         const publicURL = `https://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/${objectID}`
 
         // Advertise availability with UHRP
-        createUHRPAdvertisement({
+        const adTXID = await createUHRPAdvertisement({
           hash: hashString,
           url: publicURL,
-          expiryTime: parseInt(deleteAfter.getTime())
+          expiryTime: parseInt(deleteAfter.getTime()),
+          contentLength: file.size
         })
 
         // Resolve with the data
         resolve({
           publicURL,
-          hash: blob.name
+          hash: blob.name,
+          adTXID
         })
       })
       .on('error', reject)
