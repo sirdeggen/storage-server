@@ -21,16 +21,14 @@ echo "Generating storage credential file..."
 echo "$GCP_STORAGE_CREDS" > storage-creds.json
 
 # Create deployment file with needed variables
-if [ -e $NODE_ENV = "production" ]; then
+if [ $NODE_ENV = "production" ]; then
   echo "runtime: nodejs14" > app.production.yaml
-  echo `service: default
-env_variables:
-  CWI_NPM_TOKEN: $CWI_NPM_TOKEN
-` >> app.production.yaml
+  echo "service: default" >> app.production.yaml
+  echo "env_variables:" >> app.production.yaml
+  echo "  CWI_NPM_TOKEN: $CWI_NPM_TOKEN" >> app.production.yaml
 else
   echo "runtime: nodejs14" > app.staging.yaml
-  echo `service: staging
-env_variables:
-  CWI_NPM_TOKEN: $CWI_NPM_TOKEN
-` >> app.staging.yaml
+  echo "service: staging" >> app.staging.yaml
+  echo "env_variables:" >> app.staging.yaml
+  echo "  CWI_NPM_TOKEN: $CWI_NPM_TOKEN" >> app.staging.yaml
 fi
