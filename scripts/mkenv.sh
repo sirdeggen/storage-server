@@ -14,9 +14,23 @@ echo "MIN_HOSTING_MINUTES=$MIN_HOSTING_MINUTES" >> .env
 echo "GCP_BUCKET_NAME=$GCP_BUCKET_NAME" >> .env
 echo "GCP_PROJECT_ID=$GCP_PROJECT_ID" >> .env
 echo "SERVER_XPUB=$SERVER_XPUB" >> .env
+echo "CWI_NPM_TOKEN=$CWI_NPM_TOKEN" >> .env
 
 # Create credential file
 echo "Generating storage credential file..."
 echo "$GCP_STORAGE_CREDS" > storage-creds.json
 
 # Create deployment file with needed variables
+if [ -e $NODE_ENV = "production" ]; then
+  echo "runtime: nodejs14" > app.production.yaml
+  echo `service: default
+env_variables:
+  CWI_NPM_TOKEN: $CWI_NPM_TOKEN
+` >> app.production.yaml
+else
+  echo "runtime: nodejs14" > app.staging.yaml
+  echo `service: staging
+env_variables:
+  CWI_NPM_TOKEN: $CWI_NPM_TOKEN
+` >> app.staging.yaml
+fi
