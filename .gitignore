@@ -8,3 +8,4 @@ yarn.lock
 public/.well-known/cwi-secret-server
 app.production.yaml
 app.staging.yaml
+.npmrc

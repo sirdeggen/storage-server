@@ -20,6 +20,11 @@ echo "CWI_NPM_TOKEN=$CWI_NPM_TOKEN" >> .env
 echo "Generating storage credential file..."
 echo "$GCP_STORAGE_CREDS" > storage-creds.json
 
+# Create .npmrc
+echo "Generating .npmrc"
+echo "@cwi:registry=https://npm-registry.babbage.systems/" > .npmrc
+echo "//npm-registry.babbage.systems/:_authToken=$CWI_NPM_TOKEN" >> .npmrc
+
 # Create deployment file with needed variables
 if [ $NODE_ENV = "production" ]; then
   echo "Generating production GAE descriptor..."
