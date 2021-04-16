@@ -22,11 +22,13 @@ echo "$GCP_STORAGE_CREDS" > storage-creds.json
 
 # Create deployment file with needed variables
 if [ $NODE_ENV = "production" ]; then
+  echo "Generating production GAE descriptor..."
   echo "runtime: nodejs14" > app.production.yaml
   echo "service: default" >> app.production.yaml
   echo "env_variables:" >> app.production.yaml
   echo "  CWI_NPM_TOKEN: $CWI_NPM_TOKEN" >> app.production.yaml
 else
+  echo "Generating staging GAE descriptor..."
   echo "runtime: nodejs14" > app.staging.yaml
   echo "service: staging" >> app.staging.yaml
   echo "env_variables:" >> app.staging.yaml
