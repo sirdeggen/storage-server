@@ -4,6 +4,7 @@ const knex =
     : require('knex')(require('../../knexfile.js').development)
 const { Storage } = require('@google-cloud/storage')
 const path = require('path')
+const https = require('https')
 
 const serviceKey = path.join(__dirname, '../../storage-creds.json')
 const bucketName = process.env.GCP_BUCKET_NAME
@@ -31,14 +32,46 @@ module.exports = {
         })
       }
       const storageFile = bucket.file(file.fileHash)
-      res.header('Content-Type', file.mimeType)
-      const storageStream = storageFile.createReadStream()
-      storageStream.on('data', data => {
-        res.write(data)
+      const [url] = await storageFile.getSignedUrl({
+        version: 'v4',
+        action: 'read',
+        expires: Date.now() + 604500 * 1000 // one month
       })
-      storageStream.on('end', () => {
+      const urlPath = url.split('/').pop()
+      const newHeaders = {
+        ...req.headers
+      }
+      delete newHeaders.host
+      const httpRequest = https.request({
+        host: 'storage.googleapis.com',
+        port: 443,
+        path: `/${bucketName}/${urlPath}`,
+        method: 'GET',
+        headers: newHeaders
+      }, proxyRes => {
+        res.header('Content-Type', file.mimeType)
+        res.writeHead(proxyRes.statusCode)
+        proxyRes.on('data', chunk => {
+          res.write(chunk)
+        })
+        proxyRes.on('close', () => {
+          res.end()
+        })
+        proxyRes.on('end', () => {
+          res.end()
+        })
+      })
+      httpRequest.on('error', e => {
+        console.error(e)
+        try {
+          res.writeHead(500)
+          res.write(e.message)
+        } catch (e) {
+          // ignore
+        }
         res.end()
       })
+      httpRequest.end()
     } catch (e) {
       console.error(e)
       return res.status(500).json({
