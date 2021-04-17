@@ -47,7 +47,7 @@ module.exports = ({
         objectID = objectID[0].objectIdentifier
 
         // Define the public URL
-        const publicURL = `https://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/${objectID}`
+        const publicURL = `https://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectID}`
 
         // Advertise availability with UHRP
         const adTXID = await createUHRPAdvertisement({
