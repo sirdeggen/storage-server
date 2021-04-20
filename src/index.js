@@ -81,7 +81,7 @@ app.use((req, res) => {
 })
 
 app.listen(HTTP_PORT, () => {
-  console.log('Hashbrown listening on port', HTTP_PORT)
+  console.log('Nanostore listening on port', HTTP_PORT)
   const addr = bsv
     .PrivateKey
     .fromString(UHRP_HOST_PRIVATE_KEY)

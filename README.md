@@ -1,4 +1,4 @@
-# @cwi/hashbrown
+# @cwi/nanostore
 
 ## Testing
 

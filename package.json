@@ -1,9 +1,9 @@
 {
-  "name": "@cwi/hashbrown",
+  "name": "@cwi/nanostore",
   "version": "0.1.0",
   "private": true,
   "main": "src/index.js",
-  "repository": "https://github.com/p2ppsr/hashbrown",
+  "repository": "https://github.com/p2ppsr/nanostore",
   "author": "Peer-to-peer Privacy Systems Research, LLC",
   "license": "PROPRIETARY",
   "dependencies": {
