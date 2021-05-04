@@ -17,6 +17,25 @@ module.exports = {
   type: 'post',
   path: '/invoice',
   knex,
+  summary: 'Use this route to create an invoice for the hosting of a file. The server will respond with a reference number and some Bitcoin transaction output scripts, which you should include in a transaction that pays the invoice.',
+  parameters: {
+    fileSize: 'Specify the size of the file you would like to host in bytes',
+    retentionPeriod: 'Specify the whole number of minutes that you want the file to be hosted. You will also receive the public URL where the file would be hosted if the invoice is paid.'
+  },
+  exampleResponse: {
+    referenceNumber: 'fjsodf+s/4Ssje==',
+    outputs: [
+      {
+        amount: 1209,
+        outputScript: '006a6d02...'
+      },
+      {
+        amount: 1234,
+        outputScript: '123456...'
+      }
+    ],
+    publicURL: 'https://foo.com/file/sodfjWdifjsa'
+  },
   func: async (req, res) => {
     try {
       const {

@@ -17,6 +17,18 @@ module.exports = {
   type: 'post',
   path: '/upload',
   knex,
+  summary: 'Use this route to pay an invoice and upload the data you want to host. You should specify the file in a multipart/form-data payload. You will receive back the public URL, the hash (UHRP URL) of the published file, and "published=true" if the upload was successful.',
+  parameters: {
+    referenceNumber: 'The reference number you received when you created the invoice.',
+    file: 'The file, which should be of the size specified by the invoice.',
+    transactionHex: 'A ready-to-broadcast Bitcoin transaction that contains the outputs specified by the invoice. If the transaction is not already broadcasted, it will be sent by the server.',
+    inputProofs: 'This is not currently required, but in the future, you will need to provide an array of SPV proofs for each of the inputs to the BSV transaction.'
+  },
+  exampleResponse: {
+    published: true,
+    publicURL: 'https://foo.com/file/sodfjWdifjsa',
+    hash: 'XUT...'
+  },
   middleware: multerMid.single('file'),
   func: async (req, res) => {
     try {

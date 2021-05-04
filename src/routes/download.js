@@ -18,6 +18,7 @@ module.exports = {
   type: 'get',
   path: '/file/:objectIdentifier',
   knex,
+  summary: 'Use this route when requesting data that is being hosted with NanoStore.',
   func: async (req, res) => {
     try {
       const [file] = await knex('file').where({

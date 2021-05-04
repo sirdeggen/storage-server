@@ -1,14 +1,19 @@
-// const ejs = require('ejs')
-// const fs = require('fs')
-// require('dotenv').config()
+const ejs = require('ejs')
+const fs = require('fs')
+require('dotenv').config()
 
-// ejs.renderFile('src/templates/hash-brown.ejs', process.env, {}, (err, res) => {
-//   if (err) {
-//     throw err
-//   }
-//   console.log('Generating well-known configuration...')
-//   console.log(res)
-//   fs.writeFileSync('public/.well-known/cwi-secret-server', res)
-// })
-
-console.log('That was easy!')
+ejs.renderFile(
+  'src/templates/documentation.ejs',
+  {
+    ...process.env,
+    routes: require('../src/routes')
+  },
+  {},
+  (err, res) => {
+    if (err) {
+      throw err
+    }
+    console.log('Generating API Documentation...')
+    fs.writeFileSync('public/index.html', res)
+  }
+)
