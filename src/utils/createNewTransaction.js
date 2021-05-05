@@ -50,7 +50,6 @@ module.exports = ({ fileId, amount, numberOfMinutesPurchased, knex }) => {
         })
       } catch (e) {
         reject(e)
-        trx.abort()
       }
     })
   })

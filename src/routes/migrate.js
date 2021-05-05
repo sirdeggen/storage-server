@@ -17,6 +17,9 @@ module.exports = {
   exampleResponse: {
     status: 'success'
   },
+  errors: [
+    'ERR_UNAUTHORIZED'
+  ],
   func: async (req, res) => {
     if (
       typeof MIGRATE_KEY === 'string' &&
@@ -30,7 +33,7 @@ module.exports = {
     } else {
       res.status(401).json({
         status: 'error',
-        code: 'ERR_BAD_MIGRATE_KEY',
+        code: 'ERR_UNAUTHORIZED',
         description: 'Migrate key is invalid'
       })
     }

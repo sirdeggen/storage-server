@@ -3,6 +3,10 @@ const { PRICE_PER_GB_MO } = process.env
 
 // Calculate the number of satoshis to charge for the storage
 module.exports = async ({ retentionPeriod, fileSize }) => {
+  if (typeof PRICE_PER_GB_MO === 'undefined') {
+    throw new Error('PRICE_PER_GB_MO is undefined')
+  }
+
   // File size is in bytes, convert to gigabytes
   fileSize = fileSize / 1000000000
 
@@ -13,24 +17,34 @@ module.exports = async ({ retentionPeriod, fileSize }) => {
   const usdPrice = retentionPeriod * fileSize * PRICE_PER_GB_MO
 
   // Get the exchange rate
-  let { data: exchangeRate } = await axios.get(
-    'https://api.whatsonchain.com/v1/bsv/main/exchangerate'
-  )
-  if (typeof exchangeRate !== 'object' || isNaN(exchangeRate.rate)) {
-    console.error('Exchange rate failed, using 100')
+  let exchangeRate
+  try {
+    const { data } = await axios.get(
+      'https://api.whatsonchain.com/v1/bsv/main/exchangerate'
+    )
+    if (typeof data !== 'object' || isNaN(data.rate)) {
+      throw new Error('Invalid rate response')
+    } else {
+      exchangeRate = data.rate
+    }
+  } catch (e) {
     exchangeRate = 100
-  } else {
-    exchangeRate = exchangeRate.rate
+    console.error('Exchange rate failed, using 100', e)
   }
 
   // Exchange rate is in BSV, convert to satoshis
   exchangeRate = exchangeRate / 100000000
 
-  let satPrice = parseInt(usdPrice * (1 / exchangeRate))
+  // satoshis / dollars -> dollars / satoshis
+  exchangeRate = 1 / exchangeRate
 
-  // Avoid outputs smaller than 600 satoshis
-  if (satPrice < 600) {
-    satPrice = 600
+  // dollars * (dollars / satoshis) -> satoshis
+  let satPrice = parseInt(usdPrice * exchangeRate)
+
+  // Avoid dust outputs (which are smaller than 546 satoshis)
+  // TODO: Find out from miners if they will accept anything smaller
+  if (satPrice < 546) {
+    satPrice = 546
   }
 
   return satPrice

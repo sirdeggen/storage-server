@@ -6,6 +6,7 @@ const knex =
     : require('knex')(require('../../knexfile.js').development)
 const bsv = require('bsv')
 const axios = require('axios')
+const isFinal = require('bsv-is-final-tx')
 
 const { SERVER_XPUB } = process.env
 
@@ -29,6 +30,18 @@ module.exports = {
     publicURL: 'https://foo.com/file/sodfjWdifjsa',
     hash: 'XUT...'
   },
+  errors: [
+    'ERR_FILE_MISSING',
+    'ERR_NO_REF',
+    'ERR_NO_TX',
+    'ERR_BAD_REF',
+    'ERR_ALREADY_PAID',
+    'ERR_TX_NOT_FINAL',
+    'ERR_BAD_TX',
+    'ERR_TX_REJECTED',
+    'ERR_SIZE_MISMATCH',
+    'ERR_INTERNAL'
+  ],
   middleware: multerMid.single('file'),
   func: async (req, res) => {
     try {
@@ -89,11 +102,12 @@ module.exports = {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_ALREADY_PAID',
-          description: `The reference number you have provided is attached to an invoice that was already paid by a transaction with TXID ${transaction.txid}`
+          description: `The reference number you have provided is attached to an invoice that was already paid by a transaction with TXID ${transaction.txid}`,
+          txid: transaction.txid
         })
       }
 
-      const [file] = await knex('file').select().where({
+      const [file] = await knex('file').select('fileSize').where({
         fileId: transaction.fileId
       })
 
@@ -150,10 +164,19 @@ module.exports = {
         })) {
           return res.status(400).json({
             status: 'error',
-            code: 'ERR_TRANSACTION_REJECTED',
+            code: 'ERR_TX_REJECTED',
             description: 'One or more outputs did not match what was requested by the invoice.'
           })
         }
+      }
+
+      // Check that the transaction is final
+      if (!isFinal(tx)) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_TX_NOT_FINAL',
+          description: 'This transaction is not final. Ensure that the transaction meets the rules for being finalized which can be found at https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence'
+        })
       }
 
       // Broadcast the transaction, obtaining positive validation from miners
@@ -192,7 +215,7 @@ module.exports = {
         )
         return res.status(400).json({
           status: 'error',
-          code: 'ERR_TRANSACTION_REJECTED',
+          code: 'ERR_TX_REJECTED',
           description: `The Bitcoin network has rejected this transaction: ${broadcastResult.data}`
         })
       }
@@ -201,7 +224,7 @@ module.exports = {
       // (sometimes it will be in broadcastResult.body, but not if the transaction was already known)
       const broadcastedTXID = tx.hash
 
-      // Update the transaction with the new status, rawTransaction, txid, (and, if given, sender and note)
+      // Update the transaction with the payment statu and txid
       await knex('transaction').where({
         referenceNumber
       }).update({
@@ -220,7 +243,11 @@ module.exports = {
         advertisementTXID: adTXID
       })
 
-      res.status(200).json({ publicURL, hash, published: true })
+      return res.status(200).json({
+        publicURL,
+        hash,
+        published: true
+      })
     } catch (e) {
       console.error(e)
       return res.status(500).json({
