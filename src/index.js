@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const bodyparser = require('body-parser')
 const prettyjson = require('prettyjson')
+const sendSeekable = require('send-seekable')
 const routes = require('./routes')
 const bsv = require('bsv')
 
@@ -18,6 +19,7 @@ const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 
 const app = express()
 app.use(bodyparser.json())
+app.use(sendSeekable)
 app.use((req, res, next) => {
   if (
     !req.secure &&

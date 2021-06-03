@@ -10,7 +10,8 @@ const createNewTransaction = require('../utils/createNewTransaction')
 const {
   MIN_HOSTING_MINUTES,
   HOSTING_DOMAIN,
-  ROUTING_PREFIX
+  ROUTING_PREFIX,
+  NODE_ENV
 } = process.env
 
 module.exports = {
@@ -127,7 +128,7 @@ module.exports = {
       res.status(200).json({
         referenceNumber,
         outputs,
-        publicURL: `https://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectIdentifier}`
+        publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectIdentifier}`
       })
     } catch (e) {
       console.error(e)
