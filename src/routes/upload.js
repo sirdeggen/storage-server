@@ -154,16 +154,17 @@ module.exports = {
       // Submit the payment to the Paymail server
       let txid, errorMessage
       try {
-        const sent = await atfinder.submitSPVTransaction(SERVER_PAYMAIL, {
+        const env = {
           rawTx: transactionHex,
           reference: referenceNumber,
-          inputs,
-          proof,
-          mapiResponses,
           metadata: {
             note: `Payment from ${HOSTING_DOMAIN}, ${transaction.numberOfMinutesPurchased} minutes, ref. ${referenceNumber}`
           }
-        })
+        }
+        if (inputs) env.inputs = JSON.parse(inputs)
+        if (mapiResponses) env.mapiResponses = JSON.parse(mapiResponses)
+        if (proof) env.proof = JSON.parse(proof)
+        const sent = await atfinder.submitSPVTransaction(SERVER_PAYMAIL, env)
         txid = sent.txid
       } catch (e) {
         // Info and not error, a user messed up and not us.
