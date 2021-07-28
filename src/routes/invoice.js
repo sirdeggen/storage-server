@@ -117,7 +117,7 @@ module.exports = {
       fileId = fileId.fileId
 
       // Create a new transaction
-      const { referenceNumber, outputs } = await createNewTransaction({
+      const { referenceNumber, outputs, fee } = await createNewTransaction({
         amount: satPrice,
         numberOfMinutesPurchased: retentionPeriod,
         fileId,
@@ -128,6 +128,7 @@ module.exports = {
       res.status(200).json({
         referenceNumber,
         outputs,
+        fee,
         publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectIdentifier}`
       })
     } catch (e) {

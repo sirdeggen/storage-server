@@ -1,16 +1,14 @@
 const upload = require('../upload')
 const mockKnex = require('mock-knex')
-const isFinal = require('bsv-is-final-tx')
-const axios = require('axios')
 const uploadSingleFile = require('../../utils/uploadSingleFile')
 const bsv = require('bsv')
+const atfinder = require('atfinder')
 
-const { SERVER_XPUB } = process.env
+const { SERVER_PAYMAIL } = process.env
 
-jest.mock('bsv-is-final-tx')
-jest.mock('axios')
 jest.mock('../../utils/uploadSingleFile')
 jest.mock('@google-cloud/storage')
+jest.mock('atfinder')
 
 const mockRes = {}
 mockRes.status = jest.fn(() => mockRes)
@@ -22,15 +20,9 @@ describe('upload', () => {
     jest.spyOn(console, 'error').mockImplementation(e => {
       throw e
     })
-    isFinal.mockReturnValue(true)
     mockKnex.mock(upload.knex)
     queryTracker = require('mock-knex').getTracker()
     queryTracker.install()
-    axios.post.mockReturnValue({
-      status: 400,
-      data: '257: txn-already-known'
-    })
-    isFinal.mockReturnValue(true)
     uploadSingleFile.mockReturnValue({
       adTXID: 'MOCK_AD_TXID',
       publicURL: 'MOCK_PUBLIC_URL',
@@ -43,22 +35,15 @@ describe('upload', () => {
       .Script
       .buildSafeDataOut(['MOCK_REFNO']) // From the transaction
       .toHex()
-    const childPublicKey = bsv.HDPublicKey.fromString(SERVER_XPUB)
-      .deriveChild(24).publicKey // "24" is the path from the transaction
-    const address = bsv.Address.fromPublicKey(childPublicKey)
-    const outputScript = bsv.Script.fromAddress(address).toHex()
     const bsvtx = new bsv.Transaction()
     bsvtx.addOutput(new bsv.Transaction.Output({
       script: dataOutputScript,
       satoshis: 0
     }))
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: outputScript,
-      satoshis: 1337 // From the file amount
-    }))
     // No need to actually sign
-    // This only works because we are mocking a successful transaction broadcast with axios. In reality, while this passes our validation, the miners would never accept this transaction and so no one could actually do something like this.
+    // This only works because we are mocking a successful transaction broadcast with atfinder. In reality, while this passes our validation, the miners would never accept this transaction and so no one could actually do something like this.
     const txhex = bsvtx.uncheckedSerialize()
+    atfinder.submitSPVTransaction.mockReturnValue({ txid: 'MOCK_TXID' })
 
     validReq = {
       file: {
@@ -67,13 +52,15 @@ describe('upload', () => {
       },
       body: {
         transactionHex: txhex,
-        referenceNumber: 'MOCK_REFNO'
+        referenceNumber: 'MOCK_REFNO',
+        inputs: 'MOCK_INPUTS',
+        mapiResponses: 'MOCK_MAPI',
+        proof: 'MOCK_PROOF'
       }
     }
     validTx = {
       fileId: 'MOCK_FILE_ID',
       amount: 1337,
-      path: 24,
       numberOfMinutesPurchased: 90,
       txid: null,
       paid: false
@@ -116,7 +103,7 @@ describe('upload', () => {
       if (s === 1) {
         expect(q.method).toEqual('select')
         expect(q.sql).toEqual(
-          'select `fileId`, `amount`, `path`, `numberOfMinutesPurchased`, `txid`, `paid` from `transaction` where `referenceNumber` = ?'
+          'select `fileId`, `amount`, `numberOfMinutesPurchased`, `txid`, `paid` from `transaction` where `referenceNumber` = ?'
         )
         expect(q.bindings).toEqual(['MOCK_REFNO'])
         q.response([validTx])
@@ -228,44 +215,7 @@ describe('upload', () => {
     }))
   })
   it('Returns error if transaction has no data output', async () => {
-    const childPublicKey = bsv.HDPublicKey.fromString(SERVER_XPUB)
-      .deriveChild(24).publicKey // "24" is the path from the transaction
-    const address = bsv.Address.fromPublicKey(childPublicKey)
-    const outputScript = bsv.Script.fromAddress(address).toHex()
     const bsvtx = new bsv.Transaction()
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: outputScript,
-      satoshis: 1337 // From the file amount
-    }))
-    validReq.body.transactionHex = bsvtx.uncheckedSerialize()
-    queryTracker.on('query', (q, s) => {
-      if (s === 1) {
-        q.response([validTx])
-      } else if (s === 2) {
-        q.response([{ fileSize: 5 }])
-      } else if (s === 3) {
-        q.response([])
-      } else if (s === 4) {
-        q.response([])
-      }
-    })
-    await upload.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_TX_REJECTED'
-    }))
-  })
-  it('Returns error if transaction has no payment output', async () => {
-    const dataOutputScript = bsv
-      .Script
-      .buildSafeDataOut(['MOCK_REFNO']) // From the transaction
-      .toHex()
-    const bsvtx = new bsv.Transaction()
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: dataOutputScript,
-      satoshis: 0
-    }))
     validReq.body.transactionHex = bsvtx.uncheckedSerialize()
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
@@ -286,10 +236,6 @@ describe('upload', () => {
     }))
   })
   it('Returns error if transaction has wrong data output script', async () => {
-    const childPublicKey = bsv.HDPublicKey.fromString(SERVER_XPUB)
-      .deriveChild(24).publicKey // "24" is the path from the transaction
-    const address = bsv.Address.fromPublicKey(childPublicKey)
-    const outputScript = bsv.Script.fromAddress(address).toHex()
     const dataOutputScript = bsv
       .Script
       .buildSafeDataOut(['WRONG'])
@@ -299,10 +245,6 @@ describe('upload', () => {
       script: dataOutputScript,
       satoshis: 0
     }))
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: outputScript,
-      satoshis: 1337 // From the file amount
-    }))
     validReq.body.transactionHex = bsvtx.uncheckedSerialize()
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
@@ -322,105 +264,8 @@ describe('upload', () => {
       code: 'ERR_TX_REJECTED'
     }))
   })
-  it('Returns error if transaction has wrong payment output script', async () => {
-    const childPublicKey = bsv.HDPublicKey.fromString(SERVER_XPUB)
-      .deriveChild(21).publicKey // using the wrong path
-    const address = bsv.Address.fromPublicKey(childPublicKey)
-    const outputScript = bsv.Script.fromAddress(address).toHex()
-    const dataOutputScript = bsv
-      .Script
-      .buildSafeDataOut(['MOCK_REFNO'])
-      .toHex()
-    const bsvtx = new bsv.Transaction()
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: dataOutputScript,
-      satoshis: 0
-    }))
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: outputScript,
-      satoshis: 1337 // From the file amount
-    }))
-    validReq.body.transactionHex = bsvtx.uncheckedSerialize()
-    queryTracker.on('query', (q, s) => {
-      if (s === 1) {
-        q.response([validTx])
-      } else if (s === 2) {
-        q.response([{ fileSize: 5 }])
-      } else if (s === 3) {
-        q.response([])
-      } else if (s === 4) {
-        q.response([])
-      }
-    })
-    await upload.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_TX_REJECTED'
-    }))
-  })
-  it('Returns error if transaction has wrong payment output amount', async () => {
-    const childPublicKey = bsv.HDPublicKey.fromString(SERVER_XPUB)
-      .deriveChild(24).publicKey
-    const address = bsv.Address.fromPublicKey(childPublicKey)
-    const outputScript = bsv.Script.fromAddress(address).toHex()
-    const dataOutputScript = bsv
-      .Script
-      .buildSafeDataOut(['MOCK_REFNO'])
-      .toHex()
-    const bsvtx = new bsv.Transaction()
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: dataOutputScript,
-      satoshis: 0
-    }))
-    bsvtx.addOutput(new bsv.Transaction.Output({
-      script: outputScript,
-      satoshis: 580 // wrong amount
-    }))
-    validReq.body.transactionHex = bsvtx.uncheckedSerialize()
-    queryTracker.on('query', (q, s) => {
-      if (s === 1) {
-        q.response([validTx])
-      } else if (s === 2) {
-        q.response([{ fileSize: 5 }])
-      } else if (s === 3) {
-        q.response([])
-      } else if (s === 4) {
-        q.response([])
-      }
-    })
-    await upload.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_TX_REJECTED'
-    }))
-  })
-  it('Returns error if transaction not final', async () => {
-    isFinal.mockReturnValue(false)
-    queryTracker.on('query', (q, s) => {
-      if (s === 1) {
-        q.response([validTx])
-      } else if (s === 2) {
-        q.response([{ fileSize: 5 }])
-      } else if (s === 3) {
-        q.response([])
-      } else if (s === 4) {
-        q.response([])
-      }
-    })
-    await upload.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_TX_NOT_FINAL'
-    }))
-  })
-  it('Returns error if broadcast fails', async () => {
-    axios.post.mockReturnValue({
-      status: 400,
-      data: "ye didn' sign th' bloody thin ye fekin basterd"
-    })
+  it('Returns error if submitting to atfinder fails', async () => {
+    atfinder.submitSPVTransaction.mockReturnValueOnce('no')
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
         q.response([validTx])
@@ -437,8 +282,19 @@ describe('upload', () => {
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
       code: 'ERR_TX_REJECTED',
-      description: "The Bitcoin network has rejected this transaction: ye didn' sign th' bloody thin ye fekin basterd"
+      description: 'This transaction was rejected: The transaction does not contain the required outputs.'
     }))
+    // Also check the call to atfinder
+    expect(atfinder.submitSPVTransaction).toHaveBeenLastCalledWith(
+      SERVER_PAYMAIL,
+      {
+        rawTx: validReq.body.transactionHex,
+        inputs: 'MOCK_INPUTS',
+        proof: 'MOCK_PROOF',
+        mapiResponses: 'MOCK_MAPI',
+        reference: 'MOCK_REFNO'
+      }
+    )
   })
   it('Updates transaction with new TXID and paid', async () => {
     queryTracker.on('query', (q, s) => {

@@ -5,10 +5,9 @@ const knex =
     ? require('knex')(require('../../knexfile.js').production)
     : require('knex')(require('../../knexfile.js').development)
 const bsv = require('bsv')
-const axios = require('axios')
-const isFinal = require('bsv-is-final-tx')
+const atfinder = require('atfinder')
 
-const { SERVER_XPUB } = process.env
+const { SERVER_PAYMAIL } = process.env
 
 const multerMid = multer({
   storage: multer.memoryStorage()
@@ -23,7 +22,9 @@ module.exports = {
     referenceNumber: 'The reference number you received when you created the invoice.',
     file: 'The file, which should be of the size specified by the invoice.',
     transactionHex: 'A ready-to-broadcast Bitcoin transaction that contains the outputs specified by the invoice. If the transaction is not already broadcasted, it will be sent by the server.',
-    inputProofs: 'This is not currently required, but in the future, you will need to provide an array of SPV proofs for each of the inputs to the BSV transaction.'
+    inputs: 'Provide SPV proofs for each of the inputs to the BSV transaction. See the SPV Envelopes standard for details.',
+    mapiResponses: 'Provide an array of mAPI responses for the transaction.',
+    proof: 'If the payment transaction is already confirmed, just provide its merkle proof, omitting the inputs and mapiResponses fields.'
   },
   exampleResponse: {
     published: true,
@@ -56,8 +57,10 @@ module.exports = {
 
       const {
         referenceNumber,
-        transactionHex
-      // inputProofs
+        transactionHex,
+        inputs,
+        mapiResponses,
+        proof
       } = req.body
 
       // Handle missing fields
@@ -77,19 +80,11 @@ module.exports = {
           'Provide a signed, ready-to-broadcast Bitcoin transaction paying for this file to be hosted.'
         })
       }
-      // if (!inputProofs || !Array.isArray(inputProofs)) {
-      //   return res.status(400).json({
-      //     status: 'error',
-      //     code: 'ERR_NO_PROOFS',
-      //     description:
-      //       'Missing SPV proofs. Provide an array of SPV proofs for each of the inputs to the transaction.'
-      //   })
-      // }
 
       const [transaction] = await knex('transaction').where({
         referenceNumber
       }).select(
-        'fileId', 'amount', 'path', 'numberOfMinutesPurchased', 'txid', 'paid'
+        'fileId', 'amount', 'numberOfMinutesPurchased', 'txid', 'paid'
       )
       if (!transaction) {
         return res.status(400).json({
@@ -120,20 +115,11 @@ module.exports = {
         })
       }
 
-      // Validate that the transaction contains the required outputs
-      const expectedOutputs = []
-      expectedOutputs.push({
-        outputScript: bsv
-          .Script
-          .buildSafeDataOut([referenceNumber])
-          .toHex(),
-        amount: 0
-      })
-      const childPublicKey = bsv.HDPublicKey.fromString(SERVER_XPUB)
-        .deriveChild(transaction.path).publicKey
-      const address = bsv.Address.fromPublicKey(childPublicKey)
-      const outputScript = bsv.Script.fromAddress(address).toHex()
-      expectedOutputs.push({ outputScript, amount: transaction.amount })
+      // Check that the transaction contains the reference number output
+      const expectedScript = bsv
+        .Script
+        .buildSafeDataOut([referenceNumber])
+        .toHex()
       let tx
       try {
         tx = new bsv.Transaction(transactionHex)
@@ -144,91 +130,61 @@ module.exports = {
           description: 'Unable to parse this Bitcoin transaction!'
         })
       }
-
-      // For every one of the required outputs
-      for (let i = 0; i < expectedOutputs.length; i++) {
-      // Ensure that some output in this transaction meets the requirements of expectedOutputs[i], including script matching and amount
-        if (!tx.outputs.some((outputToTest, vout) => {
-          try {
-            if (
-              outputToTest.script.toHex() === expectedOutputs[i].outputScript &&
-              outputToTest.satoshis === expectedOutputs[i].amount
-            ) {
-              return true
-            } else {
-              return false
-            }
-          } catch (e) {
+      if (!tx.outputs.some((outputToTest, vout) => {
+        try {
+          if (
+            outputToTest.script.toHex() === expectedScript &&
+              outputToTest.satoshis === 0
+          ) {
+            return true
+          } else {
             return false
           }
-        })) {
-          return res.status(400).json({
-            status: 'error',
-            code: 'ERR_TX_REJECTED',
-            description: 'One or more outputs did not match what was requested by the invoice.'
-          })
+        } catch (e) {
+          return false
         }
-      }
-
-      // Check that the transaction is final
-      if (!isFinal(tx)) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_TX_NOT_FINAL',
-          description: 'This transaction is not final. Ensure that the transaction meets the rules for being finalized which can be found at https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence'
-        })
-      }
-
-      // Broadcast the transaction, obtaining positive validation from miners
-      let broadcastResult
-      try {
-        broadcastResult = await axios.post(
-          'https://api.whatsonchain.com/v1/bsv/main/tx/raw',
-          { txhex: transactionHex }
-        )
-      } catch (e) {
-        if (e.response && e.response.data && e.response.status) {
-          broadcastResult = {
-            data: e.response.data,
-            status: e.response.status
-          }
-        } else {
-          throw e
-        }
-      }
-
-      if (!( // If not (200 or already known), reject transaction and log
-        (
-          broadcastResult.status === 200 &&
-            broadcastResult.data &&
-            broadcastResult.data.length === 64
-        ) || (
-          broadcastResult.status === 400 &&
-            broadcastResult.data === '257: txn-already-known'
-        ) || (
-          broadcastResult.status === 400 &&
-            broadcastResult.data === 'Transaction already in the mempool'
-        )
-      )) {
-        console.log(
-          `Marking TX as rejected for HTTP status ${broadcastResult.status} and response ${broadcastResult.data}`
-        )
+      })) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_TX_REJECTED',
-          description: `The Bitcoin network has rejected this transaction: ${broadcastResult.data}`
+          description: 'One or more outputs did not match what was requested by the invoice.'
         })
       }
 
-      // Calculate the TXID of the transaction
-      // (sometimes it will be in broadcastResult.body, but not if the transaction was already known)
-      const broadcastedTXID = tx.hash
+      // Submit the payment to the Paymail server
+      let txid, errorMessage
+      try {
+        const sent = await atfinder.submitSPVTransaction(SERVER_PAYMAIL, {
+          rawTx: transactionHex,
+          reference: referenceNumber,
+          inputs,
+          proof,
+          mapiResponses
+        })
+        txid = sent.txid
+      } catch (e) {
+        // Info and not error, a user messed up and not us.
+        console.info(e)
+        if (e.response && e.response.data && e.response.data.description) {
+          errorMessage = `${e.response.data.code}: ${e.response.data.description}`
+        } else {
+          errorMessage = e.message
+        }
+      }
 
-      // Update the transaction with the payment statu and txid
+      if (!txid) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_TX_REJECTED',
+          description: `This transaction was rejected: ${errorMessage || 'The transaction does not contain the required outputs.'}`
+        })
+      }
+
+      // Update the transaction with the payment status and txid
       await knex('transaction').where({
         referenceNumber
       }).update({
-        txid: broadcastedTXID,
+        txid,
         paid: true
       })
 
@@ -249,12 +205,13 @@ module.exports = {
         published: true
       })
     } catch (e) {
-      console.error(e)
-      return res.status(500).json({
+      res.status(500).json({
         status: 'error',
         code: 'ERR_INTERNAL',
         description: 'An internal error has occurred.'
       })
+      console.error(e)
+      return null
     }
   }
 }

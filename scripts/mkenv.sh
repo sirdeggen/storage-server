@@ -13,7 +13,7 @@ echo "UHRP_HOST_PRIVATE_KEY=$UHRP_HOST_PRIVATE_KEY" >> .env
 echo "MIN_HOSTING_MINUTES=$MIN_HOSTING_MINUTES" >> .env
 echo "GCP_BUCKET_NAME=$GCP_BUCKET_NAME" >> .env
 echo "GCP_PROJECT_ID=$GCP_PROJECT_ID" >> .env
-echo "SERVER_XPUB=$SERVER_XPUB" >> .env
+echo "SERVER_PAYMAIL=$SERVER_PAYMAIL" >> .env
 echo "CWI_NPM_TOKEN=$CWI_NPM_TOKEN" >> .env
 
 # Create credential file

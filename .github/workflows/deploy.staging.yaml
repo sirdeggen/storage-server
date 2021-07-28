@@ -24,7 +24,7 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.STAGING_GCP_PROJECT_ID }}
           UHRP_HOST_PRIVATE_KEY: ${{ secrets.STAGING_UHRP_HOST_PRIVATE_KEY }}
           MIN_HOSTING_MINUTES: ${{ secrets.STAGING_MIN_HOSTING_MINUTES }}
-          SERVER_XPUB: ${{ secrets.STAGING_SERVER_XPUB }}
+          SERVER_PAYMAIL: ${{ secrets.STAGING_SERVER_PAYMAIL }}
           CWI_NPM_TOKEN: ${{ secrets.CWI_NPM_TOKEN }}
       - name: Use Node.js
         uses: actions/setup-node@v1
