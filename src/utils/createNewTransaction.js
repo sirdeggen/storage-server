@@ -8,7 +8,7 @@ module.exports = async ({ fileId, amount, numberOfMinutesPurchased, knex }) => {
     outputs,
     reference,
     fee
-  } = await atfinder.requestOutputsForP2PTransaction(SERVER_PAYMAIL)
+  } = await atfinder.requestOutputsForP2PTransaction(SERVER_PAYMAIL, amount)
   await knex('transaction').insert({
     referenceNumber: reference,
     fileId,
