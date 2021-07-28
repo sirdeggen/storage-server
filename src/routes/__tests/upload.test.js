@@ -4,7 +4,7 @@ const uploadSingleFile = require('../../utils/uploadSingleFile')
 const bsv = require('bsv')
 const atfinder = require('atfinder')
 
-const { SERVER_PAYMAIL } = process.env
+const { SERVER_PAYMAIL, HOSTING_DOMAIN } = process.env
 
 jest.mock('../../utils/uploadSingleFile')
 jest.mock('@google-cloud/storage')
@@ -292,7 +292,10 @@ describe('upload', () => {
         inputs: 'MOCK_INPUTS',
         proof: 'MOCK_PROOF',
         mapiResponses: 'MOCK_MAPI',
-        reference: 'MOCK_REFNO'
+        reference: 'MOCK_REFNO',
+        metadata: {
+          note: `Payment from ${HOSTING_DOMAIN}, 90 minutes, ref. MOCK_REFNO`
+        }
       }
     )
   })

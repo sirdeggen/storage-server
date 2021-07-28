@@ -7,7 +7,7 @@ const knex =
 const bsv = require('bsv')
 const atfinder = require('atfinder')
 
-const { SERVER_PAYMAIL } = process.env
+const { SERVER_PAYMAIL, HOSTING_DOMAIN } = process.env
 
 const multerMid = multer({
   storage: multer.memoryStorage()
@@ -159,7 +159,10 @@ module.exports = {
           reference: referenceNumber,
           inputs,
           proof,
-          mapiResponses
+          mapiResponses,
+          metadata: {
+            note: `Payment from ${HOSTING_DOMAIN}, ${transaction.numberOfMinutesPurchased} minutes, ref. ${referenceNumber}`
+          }
         })
         txid = sent.txid
       } catch (e) {
