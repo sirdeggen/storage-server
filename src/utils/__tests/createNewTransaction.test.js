@@ -48,7 +48,7 @@ describe('createNewTransaction', () => {
     queryTracker.on('query', q => q.response([]))
     await createNewTransaction(validInput)
     expect(atfinder.requestOutputsForP2PTransaction)
-      .toHaveBeenLastCalledWith('test@dev.test')
+      .toHaveBeenLastCalledWith('test@dev.test', 1337)
   })
   it('Inserts a new transaction', async () => {
     queryTracker.on('query', q => {

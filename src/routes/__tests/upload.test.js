@@ -53,9 +53,8 @@ describe('upload', () => {
       body: {
         transactionHex: txhex,
         referenceNumber: 'MOCK_REFNO',
-        inputs: 'MOCK_INPUTS',
-        mapiResponses: 'MOCK_MAPI',
-        proof: 'MOCK_PROOF'
+        inputs: '{"mock":true}',
+        mapiResponses: '[{"mock":true}]'
       }
     }
     validTx = {
@@ -289,9 +288,8 @@ describe('upload', () => {
       SERVER_PAYMAIL,
       {
         rawTx: validReq.body.transactionHex,
-        inputs: 'MOCK_INPUTS',
-        proof: 'MOCK_PROOF',
-        mapiResponses: 'MOCK_MAPI',
+        inputs: { mock: true },
+        mapiResponses: [{ mock: true }],
         reference: 'MOCK_REFNO',
         metadata: {
           note: `Payment from ${HOSTING_DOMAIN}, 90 minutes, ref. MOCK_REFNO`
