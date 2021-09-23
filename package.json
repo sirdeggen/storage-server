@@ -27,7 +27,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js --watch .env --watch src --exec \"node\"",
-    "build": "node scripts/build.js",
+    "gcp-build": "node scripts/build.js",
     "test": "jest --watch"
   },
   "publishConfig": {
