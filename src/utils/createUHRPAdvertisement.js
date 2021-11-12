@@ -1,8 +1,12 @@
-const remembrance = require('@cwi/remembrance')
 const bsv = require('bsv')
 const { getHashFromURL } = require('uhrp-url')
+const {
+  getTransactionWithOutputs,
+  processOutgoingTransaction
+} = require('utxoninja')
+const bridgecast = require('bridgecast')
 
-const { UHRP_HOST_PRIVATE_KEY } = process.env
+const { UHRP_HOST_PRIVATE_KEY, SERVER_XPRIV } = process.env
 
 module.exports = async ({ hash, url, expiryTime, contentLength }) => {
   hash = getHashFromURL(hash)
@@ -11,21 +15,40 @@ module.exports = async ({ hash, url, expiryTime, contentLength }) => {
   const address = key.toAddress().toString()
   expiryTime = parseInt(expiryTime / 1000)
   try {
-    return remembrance({
-      wif: UHRP_HOST_PRIVATE_KEY,
-      data: [
-        '1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG',
-        address,
-        hash,
-        'advertise',
-        url,
-        '' + expiryTime,
-        '' + contentLength
-      ]
+    const tx = getTransactionWithOutputs({
+      xprivKey: SERVER_XPRIV,
+      rPuzzleInputSigningWIF: UHRP_HOST_PRIVATE_KEY,
+      outputs: [{
+        script: bsv.Script.buildSafeDataOut([
+          '1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG',
+          address,
+          hash,
+          'advertise',
+          url,
+          '' + expiryTime,
+          '' + contentLength
+        ]),
+        satoshis: 0
+      }]
     })
+    const submitResult = await processOutgoingTransaction({
+      submittedTransaction: tx.rawTx,
+      note: 'UHRP Content Availability Advertisement',
+      reference: tx.referenceNumber,
+      xprivKey: SERVER_XPRIV
+    })
+    await bridgecast({
+      bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
+      tx: {
+        rawTx: tx.rawTx,
+        mapiResponses: submitResult.mapiResponses,
+        inputs: tx.inputs
+      }
+    })
+    return tx
   } catch (e) {
     throw new Error(
-      `Address ${address} cannot broadcast UHRP advertisement! You should ensure that there are funds available in the address.`
+      `Address ${address} cannot broadcast UHRP advertisement! You should ensure that there are funds available in the address.`, e
     )
   }
 }

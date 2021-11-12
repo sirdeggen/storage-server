@@ -19,6 +19,7 @@ module.exports = ({
   numberOfMinutesPurchased,
   knex
 }) => {
+  // eslint-disable-next-line
   return new Promise(async (resolve, reject) => {
     const hashString = getURLForFile(file.buffer)
     const blob = bucket.file(hashString)

@@ -22,6 +22,7 @@ jobs:
           GCP_STORAGE_CREDS: ${{ secrets.PROD_GCP_STORAGE_CREDS }}
           GCP_BUCKET_NAME: ${{ secrets.PROD_GCP_BUCKET_NAME }}
           UHRP_HOST_PRIVATE_KEY: ${{ secrets.PROD_UHRP_HOST_PRIVATE_KEY }}
+          SERVER_XPRIV: ${{ secrets.PROD_SERVER_XPRIV }}
           MIN_HOSTING_MINUTES: ${{ secrets.PROD_MIN_HOSTING_MINUTES }}
           GCP_PROJECT_ID: ${{ secrets.PROD_GCP_PROJECT_ID }}
           SERVER_PAYMAIL: ${{ secrets.PROD_SERVER_PAYMAIL }}

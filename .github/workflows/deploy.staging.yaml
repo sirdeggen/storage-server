@@ -23,6 +23,7 @@ jobs:
           GCP_BUCKET_NAME: ${{ secrets.STAGING_GCP_BUCKET_NAME }}
           GCP_PROJECT_ID: ${{ secrets.STAGING_GCP_PROJECT_ID }}
           UHRP_HOST_PRIVATE_KEY: ${{ secrets.STAGING_UHRP_HOST_PRIVATE_KEY }}
+          SERVER_XPRIV: ${{ secrets.STAGING_SERVER_XPRIV }}
           MIN_HOSTING_MINUTES: ${{ secrets.STAGING_MIN_HOSTING_MINUTES }}
           SERVER_PAYMAIL: ${{ secrets.STAGING_SERVER_PAYMAIL }}
           CWI_NPM_TOKEN: ${{ secrets.CWI_NPM_TOKEN }}
