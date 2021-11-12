@@ -10,7 +10,7 @@ const { UHRP_HOST_PRIVATE_KEY, SERVER_XPRIV } = process.env
 
 module.exports = async ({ hash, url, expiryTime, contentLength }) => {
   hash = getHashFromURL(hash)
-  hash = Uint8Array.from(hash)
+  hash = Buffer.from(Uint8Array.from(hash).buffer)
   const key = bsv.PrivateKey.fromWIF(UHRP_HOST_PRIVATE_KEY)
   const address = key.toAddress().toString()
   expiryTime = parseInt(expiryTime / 1000)
@@ -26,7 +26,7 @@ module.exports = async ({ hash, url, expiryTime, contentLength }) => {
         url,
         '' + expiryTime,
         '' + contentLength
-      ]),
+      ]).toHex(),
       satoshis: 0
     }]
   })
