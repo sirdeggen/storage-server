@@ -21,59 +21,63 @@ module.exports = ({
 }) => {
   // eslint-disable-next-line
   return new Promise(async (resolve, reject) => {
-    const hashString = getURLForFile(file.buffer)
-    const blob = bucket.file(hashString)
+    try {
+      const hashString = getURLForFile(file.buffer)
+      const blob = bucket.file(hashString)
 
-    const processFile = async () => {
-      // Update file table
-      const deleteAfter = new Date(
-        Date.now() + (1000 * 60 * numberOfMinutesPurchased)
-      )
-      await knex('file').where({ fileId }).update({
-        deleteAfter,
-        isUploaded: true,
-        isAvailable: true,
-        mimeType: file.mimetype,
-        fileHash: hashString
+      const processFile = async () => {
+        // Update file table
+        const deleteAfter = new Date(
+          Date.now() + (1000 * 60 * numberOfMinutesPurchased)
+        )
+        await knex('file').where({ fileId }).update({
+          deleteAfter,
+          isUploaded: true,
+          isAvailable: true,
+          mimeType: file.mimetype,
+          fileHash: hashString
+        })
+
+        // Find the file ID
+        let objectID = await knex('file')
+          .where({ fileId })
+          .select('objectIdentifier')
+        objectID = objectID[0].objectIdentifier
+
+        // Define the public URL
+        const publicURL = `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectID}`
+
+        // Advertise availability with UHRP
+        const adTXID = await createUHRPAdvertisement({
+          hash: hashString,
+          url: publicURL,
+          expiryTime: parseInt(deleteAfter.getTime()),
+          contentLength: file.size
+        })
+
+        // Resolve with the data
+        resolve({
+          publicURL,
+          hash: blob.name,
+          adTXID
+        })
+      }
+
+      const exists = await blob.exists()
+      if (exists[0]) {
+        resolve(await processFile())
+        return
+      }
+
+      const blobStream = blob.createWriteStream({
+        resumable: false
       })
-
-      // Find the file ID
-      let objectID = await knex('file')
-        .where({ fileId })
-        .select('objectIdentifier')
-      objectID = objectID[0].objectIdentifier
-
-      // Define the public URL
-      const publicURL = `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectID}`
-
-      // Advertise availability with UHRP
-      const adTXID = await createUHRPAdvertisement({
-        hash: hashString,
-        url: publicURL,
-        expiryTime: parseInt(deleteAfter.getTime()),
-        contentLength: file.size
-      })
-
-      // Resolve with the data
-      resolve({
-        publicURL,
-        hash: blob.name,
-        adTXID
-      })
+      blobStream
+        .on('finish', processFile)
+        .on('error', reject)
+        .end(file.buffer)
+    } catch (e) {
+      reject(e)
     }
-
-    const exists = await blob.exists()
-    if (exists[0]) {
-      resolve(await processFile())
-      return
-    }
-
-    const blobStream = blob.createWriteStream({
-      resumable: false
-    })
-    blobStream
-      .on('finish', processFile)
-      .on('error', reject)
-      .end(file.buffer)
   })
 }
