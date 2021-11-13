@@ -44,5 +44,5 @@ module.exports = async ({ hash, url, expiryTime, contentLength }) => {
       inputs: tx.inputs
     }
   })
-  return tx
+  return new bsv.Transaction(tx.rawTx).id
 }
