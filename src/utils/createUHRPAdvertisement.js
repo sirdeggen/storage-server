@@ -14,7 +14,7 @@ module.exports = async ({ hash, url, expiryTime, contentLength }) => {
   const key = bsv.PrivateKey.fromWIF(UHRP_HOST_PRIVATE_KEY)
   const address = key.toAddress().toString()
   expiryTime = parseInt(expiryTime / 1000)
-  const tx = getTransactionWithOutputs({
+  const tx = await getTransactionWithOutputs({
     xprivKey: SERVER_XPRIV,
     rPuzzleInputSigningWIF: UHRP_HOST_PRIVATE_KEY,
     outputs: [{
