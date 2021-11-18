@@ -36,13 +36,17 @@ module.exports = async ({ hash, url, expiryTime, contentLength }) => {
     reference: tx.referenceNumber,
     xprivKey: SERVER_XPRIV
   })
-  await bridgecast({
-    bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
-    tx: {
-      rawTx: tx.rawTx,
-      mapiResponses: submitResult.mapiResponses,
-      inputs: tx.inputs
-    }
-  })
+  try {
+    await bridgecast({
+      bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
+      tx: {
+        rawTx: tx.rawTx,
+        mapiResponses: submitResult.mapiResponses,
+        inputs: tx.inputs
+      }
+    })
+  } catch (e) {
+    console.error('Error sending UHRP tx to Bridgecast, ignoring...', e)
+  }
   return new bsv.Transaction(tx.rawTx).id
 }
