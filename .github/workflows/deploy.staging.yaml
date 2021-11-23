@@ -31,5 +31,6 @@ jobs:
         with:
           credentials: ${{ secrets.gcp_deploy_creds }}
           service: staging
+          flags: --allow-unauthenticated
           source: .
           
