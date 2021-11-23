@@ -22,16 +22,16 @@ const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
 app.use(bodyparser.json())
 app.use(sendSeekable)
-app.use((req, res, next) => {
-  if (
-    !req.secure &&
-    req.get('x-forwarded-proto') !== 'https' &&
-    process.env.NODE_ENV !== 'development'
-  ) {
-    return res.redirect('https://' + req.get('host') + req.url)
-  }
-  next()
-})
+// app.use((req, res, next) => {
+//   if (
+//     !req.secure &&
+//     req.get('x-forwarded-proto') !== 'https' &&
+//     process.env.NODE_ENV !== 'development'
+//   ) {
+//     return res.redirect('https://' + req.get('host') + req.url)
+//   }
+//   next()
+// })
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
   res.header(
