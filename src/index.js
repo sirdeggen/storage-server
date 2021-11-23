@@ -86,7 +86,8 @@ app.use((req, res) => {
 
 const server = spdy.createServer(http.Server, {
   plain: true,
-  ssl: false
+  ssl: false,
+  protocols: ['h2', 'h2c', 'spdy/3.1', 'spdy/3', 'spdy/2', 'http/1.1', 'http/1.0']
 }, app)
 
 server.listen(HTTP_PORT, () => {
