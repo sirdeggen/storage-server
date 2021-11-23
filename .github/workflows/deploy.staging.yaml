@@ -1,4 +1,4 @@
-name: Staging GAE Deployment
+name: Staging GCR Deployment
 on:
   push:
     branches:
@@ -27,8 +27,9 @@ jobs:
           MIN_HOSTING_MINUTES: ${{ secrets.STAGING_MIN_HOSTING_MINUTES }}
           SERVER_PAYMAIL: ${{ secrets.STAGING_SERVER_PAYMAIL }}
           CWI_NPM_TOKEN: ${{ secrets.CWI_NPM_TOKEN }}
-      - uses: google-github-actions/deploy-appengine@main
+      - uses: google-github-actions/deploy-cloudrun@main
         with:
           credentials: ${{ secrets.gcp_deploy_creds }}
-          deliverables: app.staging.yaml
+          service: staging
+          source: .
           
