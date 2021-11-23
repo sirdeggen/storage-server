@@ -12,7 +12,7 @@
     "atfinder": "^1.0.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
-    "bridgecast": "^0.1.0",
+    "bridgecast": "^0.1.1",
     "bsv": "^1.5.4",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
