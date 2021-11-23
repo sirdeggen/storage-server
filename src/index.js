@@ -5,6 +5,7 @@ const prettyjson = require('prettyjson')
 const sendSeekable = require('send-seekable')
 const routes = require('./routes')
 const bsv = require('bsv')
+const http2 = require('http2')
 
 const { UHRP_HOST_PRIVATE_KEY } = process.env
 
@@ -82,7 +83,9 @@ app.use((req, res) => {
   })
 })
 
-app.listen(HTTP_PORT, () => {
+const server = http2.createServer(app)
+
+server.listen(HTTP_PORT, () => {
   console.log('Nanostore listening on port', HTTP_PORT)
   const addr = bsv
     .PrivateKey

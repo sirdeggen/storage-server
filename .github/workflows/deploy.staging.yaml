@@ -37,6 +37,6 @@ jobs:
         with:
           credentials: ${{ secrets.gcp_deploy_creds }}
           service: staging
-          flags: --allow-unauthenticated --timeout=60m
+          flags: --allow-unauthenticated --timeout=60m --use-http2
           source: .
           
