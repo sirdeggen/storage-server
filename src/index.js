@@ -5,8 +5,8 @@ const prettyjson = require('prettyjson')
 const sendSeekable = require('send-seekable')
 const routes = require('./routes')
 const bsv = require('bsv')
-const spdy = require('spdy')
-const http = require('http')
+const http2 = require('http2')
+const http2express = require('http2-express-bridge')
 
 const { UHRP_HOST_PRIVATE_KEY } = process.env
 
@@ -19,7 +19,7 @@ if (process.env.NODE_ENV !== 'development') {
 const HTTP_PORT = process.env.PORT || process.env.HTTP_PORT || 8080
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 
-const app = express()
+const app = http2express(express)
 app.use(bodyparser.json())
 app.use(sendSeekable)
 // app.use((req, res, next) => {
@@ -84,11 +84,7 @@ app.use((req, res) => {
   })
 })
 
-const server = spdy.createServer(http.Server, {
-  plain: true,
-  ssl: false,
-  protocols: ['h2', 'h2c', 'spdy/3.1', 'spdy/3', 'spdy/2', 'http/1.1', 'http/1.0']
-}, app)
+const server = http2.createSecureServer({}, app)
 
 server.listen(HTTP_PORT, () => {
   console.log('Nanostore listening on port', HTTP_PORT)
