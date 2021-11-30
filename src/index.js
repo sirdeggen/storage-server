@@ -84,7 +84,7 @@ app.use((req, res) => {
   })
 })
 
-const server = http2.createSecureServer({}, app)
+const server = http2.createServer({}, app)
 
 server.listen(HTTP_PORT, () => {
   console.log('Nanostore listening on port', HTTP_PORT)

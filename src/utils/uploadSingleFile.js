@@ -23,7 +23,7 @@ module.exports = ({
   return new Promise(async (resolve, reject) => {
     try {
       const hashString = getURLForFile(file.buffer)
-      const blob = bucket.file(hashString)
+      const bucketFile = bucket.file(hashString)
 
       const processFile = async () => {
         // Update file table
@@ -47,6 +47,11 @@ module.exports = ({
         // Define the public URL
         const publicURL = `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectID}`
 
+        // Set the content type for GCS
+        await bucketFile.setmetadata({
+          contentType: file.mimetype
+        })
+
         // Advertise availability with UHRP
         const adTXID = await createUHRPAdvertisement({
           hash: hashString,
@@ -58,18 +63,18 @@ module.exports = ({
         // Resolve with the data
         resolve({
           publicURL,
-          hash: blob.name,
+          hash: bucketFile.name,
           adTXID
         })
       }
 
-      const exists = await blob.exists()
+      const exists = await bucketFile.exists()
       if (exists[0]) {
         resolve(await processFile())
         return
       }
 
-      const blobStream = blob.createWriteStream({
+      const blobStream = bucketFile.createWriteStream({
         resumable: false
       })
       blobStream
