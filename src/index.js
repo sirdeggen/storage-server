@@ -6,7 +6,6 @@ const sendSeekable = require('send-seekable')
 const routes = require('./routes')
 const bsv = require('bsv')
 const http2 = require('http2')
-const http2express = require('http2-express-bridge')
 
 const { UHRP_HOST_PRIVATE_KEY } = process.env
 
@@ -19,7 +18,7 @@ if (process.env.NODE_ENV !== 'development') {
 const HTTP_PORT = process.env.PORT || process.env.HTTP_PORT || 8080
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 
-const app = http2express(express)
+const app = express()
 app.use(bodyparser.json())
 app.use(sendSeekable)
 // app.use((req, res, next) => {
@@ -44,7 +43,6 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   console.log('[' + req.method + '] <- ' + req._parsedUrl.pathname)
   const logObject = { ...req.body }
-  // if (logObject.secret) logObject.secret = '********'
   console.log(prettyjson.render(logObject, { keysColor: 'blue' }))
   res.nologJson = res.json
   res.json = json => {
@@ -84,12 +82,7 @@ app.use((req, res) => {
   })
 })
 
-// const server = http2.createServer(app)
-
-const server = http2.createServer((req, res, next) => {
-  console.log(req.httpVersion)
-  res.status(200).json({ OK: true })
-})
+const server = http2.createServer(app)
 
 server.listen(HTTP_PORT, () => {
   console.log('Nanostore listening on port', HTTP_PORT)
