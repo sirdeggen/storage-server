@@ -13,6 +13,8 @@ const storage = new Storage({
 })
 const bucket = storage.bucket(bucketName)
 
+// DEPRECATED CODE !!! getUploadURL is teh correct approach
+
 module.exports = ({
   file,
   fileId,
