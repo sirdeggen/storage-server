@@ -9,26 +9,15 @@ const storage = new Storage({
 })
 const bucket = storage.bucket(bucketName)
 
-module.exports = ({
+module.exports = async ({
   size,
   objectIdentifier
 }) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const bucketFile = bucket.file(objectIdentifier)
-      bucketFile.createResumableUpload(({
-        metadata: {
-          'Content-Length': size
-        }
-      }, err, uri) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(uri)
-        }
-      })
-    } catch (e) {
-      reject(e)
+  const bucketFile = bucket.file(objectIdentifier)
+  const [url] = await bucketFile.createResumableUpload({
+    metadata: {
+      'Content-Length': size
     }
   })
+  return url
 }
