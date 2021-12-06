@@ -14,10 +14,12 @@ module.exports = async ({
   objectIdentifier
 }) => {
   const bucketFile = bucket.file(objectIdentifier)
-  const [url] = await bucketFile.createResumableUpload({
+  const [uploadURL] = await bucketFile.createResumableUpload({
     metadata: {
       'Content-Length': size
     }
   })
-  return url
+  return {
+    uploadURL
+  }
 }
