@@ -16,7 +16,6 @@ module.exports = async ({
   const bucketFile = bucket.file(objectIdentifier)
   const [uploadURL] = await bucketFile.createResumableUpload({
     origin: '*',
-    public: true,
     metadata: {
       'Content-Length': size
     }
