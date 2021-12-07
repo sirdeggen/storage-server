@@ -18,7 +18,9 @@ module.exports = async ({
     version: 'v4',
     action: 'write',
     expires: Date.now() + 604000 * 1000, // 1 week
-    contentLength: size
+    extensionHeaders: {
+      'content-length': size
+    }
   })
   return {
     uploadURL
