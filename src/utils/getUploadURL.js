@@ -13,7 +13,7 @@ module.exports = async ({
   size,
   objectIdentifier
 }) => {
-  const bucketFile = bucket.file(objectIdentifier)
+  const bucketFile = bucket.file(`cdn/${objectIdentifier}`)
   const [uploadURL] = await bucketFile.getSignedUrl({
     version: 'v4',
     action: 'write',

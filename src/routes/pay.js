@@ -6,7 +6,7 @@ const knex =
 const bsv = require('bsv')
 const atfinder = require('atfinder')
 
-const { SERVER_PAYMAIL, HOSTING_DOMAIN } = process.env
+const { SERVER_PAYMAIL, HOSTING_DOMAIN, NODE_ENV, ROUTING_PREFIX } = process.env
 
 module.exports = {
   type: 'post',
@@ -174,7 +174,8 @@ module.exports = {
       // })
 
       return res.status(200).json({
-        uploadURL
+        uploadURL,
+        publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${file.objectIdentifier}`
       })
     } catch (e) {
       res.status(500).json({

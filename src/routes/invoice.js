@@ -129,7 +129,7 @@ module.exports = {
         referenceNumber,
         outputs,
         fee,
-        publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectIdentifier}`
+        publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}`
       })
     } catch (e) {
       console.error(e)
