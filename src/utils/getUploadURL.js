@@ -17,7 +17,7 @@ module.exports = async ({
   const [uploadURL] = await bucketFile.getSignedUrl({
     version: 'v4',
     action: 'write',
-    expires: Date.now() + 30 * 24 * 60 * 60 * 1000, // 1 month
+    expires: Date.now() + 604800 * 1000, // 1 week
     contentLength: size
   })
   return {
