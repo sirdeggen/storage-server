@@ -14,11 +14,11 @@ module.exports = async ({
   objectIdentifier
 }) => {
   const bucketFile = bucket.file(objectIdentifier)
-  const [uploadURL] = await bucketFile.createResumableUpload({
-    origin: '*',
-    metadata: {
-      'Content-Length': size
-    }
+  const [uploadURL] = await bucketFile.getSignedUrl({
+    version: 'v4',
+    action: 'write',
+    expires: Date.now() + 30 * 24 * 60 * 60 * 1000, // 1 month
+    contentLength: size
   })
   return {
     uploadURL
