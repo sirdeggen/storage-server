@@ -36,7 +36,8 @@ jobs:
         with:
           name: stagingProcessUpload
           runtime: nodejs14
-          entry_point: src/functions/processUpload.js
+          entry_point: processUpload
+          source_dir: src/functions
           env_vars_file: functions.env.yaml
           timeout: 540
       - name: Use Node.js
@@ -47,7 +48,6 @@ jobs:
       - run: npm run build
       - uses: google-github-actions/deploy-cloudrun@main
         with:
-          credentials: ${{ secrets.gcp_deploy_creds }}
           service: staging
           flags: --allow-unauthenticated --timeout=60m
           source: .
