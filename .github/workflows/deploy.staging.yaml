@@ -27,7 +27,7 @@ jobs:
           MIN_HOSTING_MINUTES: ${{ secrets.STAGING_MIN_HOSTING_MINUTES }}
           SERVER_PAYMAIL: ${{ secrets.STAGING_SERVER_PAYMAIL }}
           CWI_NPM_TOKEN: ${{ secrets.CWI_NPM_TOKEN }}
-        - id: auth
+      - id: auth
           uses: google-github-actions/auth@v0.4.0
           with:
             credentials_json: ${{ secrets.gcp_credentials }}
