@@ -39,8 +39,6 @@ jobs:
           entry_point: src/functions/processUpload.js
           env_vars_file: functions.env.yaml
           timeout: 540
-          event_trigger_type: google.storage.object.finalize
-          event_trigger_resource: ${{ secrets.STAGING_GCP_BUCKET_NAME }}
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
