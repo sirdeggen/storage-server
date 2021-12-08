@@ -28,9 +28,9 @@ jobs:
           SERVER_PAYMAIL: ${{ secrets.STAGING_SERVER_PAYMAIL }}
           CWI_NPM_TOKEN: ${{ secrets.CWI_NPM_TOKEN }}
       - id: auth
-          uses: google-github-actions/auth@v0.4.0
-          with:
-            credentials_json: ${{ secrets.gcp_credentials }}
+        uses: google-github-actions/auth@v0.4.0
+        with:
+          credentials_json: ${{ secrets.gcp_credentials }}
       - id: deploy
         uses: google-github-actions/deploy-cloud-functions@v0.6.0
         with:
