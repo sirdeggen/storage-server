@@ -27,6 +27,20 @@ jobs:
           MIN_HOSTING_MINUTES: ${{ secrets.STAGING_MIN_HOSTING_MINUTES }}
           SERVER_PAYMAIL: ${{ secrets.STAGING_SERVER_PAYMAIL }}
           CWI_NPM_TOKEN: ${{ secrets.CWI_NPM_TOKEN }}
+        - id: auth
+          uses: google-github-actions/auth@v0.4.0
+          with:
+            credentials_json: ${{ secrets.gcp_credentials }}
+      - id: deploy
+        uses: google-github-actions/deploy-cloud-functions@v0.6.0
+        with:
+          name: stagingProcessUpload
+          runtime: nodejs14
+          entry_point: src/functions/processUpload.js
+          env_vars_file: functions.env.yaml
+          timeout: 540
+          event_trigger_type: google.storage.object.finalize
+          event_trigger_resource: ${{ secrets.STAGING_GCP_BUCKET_NAME }}
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
@@ -39,4 +53,3 @@ jobs:
           service: staging
           flags: --allow-unauthenticated --timeout=60m
           source: .
-          
