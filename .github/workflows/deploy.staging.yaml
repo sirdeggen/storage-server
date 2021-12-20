@@ -39,7 +39,7 @@ jobs:
           runtime: nodejs14
           entry_point: notifier
           source_dir: notifier
-          env_vars_file: functions.env.yaml
+          env_vars_file: notifier/functions.env.yaml
           event_trigger_type: google.storage.object.finalize
           event_trigger_resource: ${{ secrets.STAGING_GCP_BUCKET_NAME }}
           timeout: 540
