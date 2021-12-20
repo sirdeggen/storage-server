@@ -4,5 +4,6 @@ module.exports = [
   require('./invoice'),
   require('./pay'),
   require('./oldUpload'),
-  require('./migrate')
+  require('./migrate'),
+  require('./advertise')
 ]

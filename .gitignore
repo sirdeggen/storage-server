@@ -9,3 +9,4 @@ app.production.yaml
 app.staging.yaml
 .npmrc
 .DS_Store
+functions.env.yaml
