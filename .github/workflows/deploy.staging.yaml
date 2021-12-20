@@ -40,6 +40,8 @@ jobs:
           entry_point: notifier
           source_dir: notifier
           env_vars_file: notifier/functions.env.yaml
+          event_trigger_type: providers/cloud.storage/eventTypes/object.finalize
+          event_trigger_resource: ${{ secrets.STAGING_GCP_BUCKET_NAME }}
           timeout: 540
       - name: Use Node.js
         uses: actions/setup-node@v1
@@ -49,6 +51,7 @@ jobs:
       - run: npm run build
       - uses: google-github-actions/deploy-cloudrun@main
         with:
+          credentials: ${{ secrets.gcp_deploy_creds }}
           service: staging
           flags: --allow-unauthenticated --timeout=60m
           source: .
