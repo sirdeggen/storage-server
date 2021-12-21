@@ -58,14 +58,14 @@ module.exports = {
 
       const storageFile = storage
         .bucket(GCP_BUCKET_NAME)
-        .file(req.body.objectIdentifier)
+        .file(`cdn/${req.body.objectIdentifier}`)
 
       // Create advertisement
       const adTXID = await createUHRPAdvertisement({
         hash: req.body.fileHash,
         url: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,
         expiryTime,
-        contentLength: req.body.contentLength
+        contentLength: req.body.fileSize
       })
 
       // Set the custom time for file deletion

@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 const { Storage } = require('@google-cloud/storage')
 const axios = require('axios')
-const { getURLFromHash } = require('uhrp-url')
+const { getURLForHash } = require('uhrp-url')
 
 const {
   NODE_ENV,
@@ -29,15 +29,22 @@ exports.notifier = (file, context) => {
   console.log(`  Object ID: ${objectIdentifier}`)
   console.log(file)
 
-  const storageFile = storage.bucket(file.bucket).file(file.name)
-  const digest = crypto.createHash('sha256')
-  const fileStream = storageFile.createReadStream()
-  fileStream.pipe(digest)
-  fileStream.on('end', async () => {
-    digest.end()
-    const hashString = getURLFromHash(digest.read())
-    console.log('Got UHRP URL', hashString)
-    await axios.post(
+  if (!file.name.startsWith('cdn/')) {
+    // Only files uploaded to the CDN folder are advertised this way.
+    return
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      const storageFile = storage.bucket(file.bucket).file(file.name)
+      const digest = crypto.createHash('sha256')
+      const fileStream = storageFile.createReadStream()
+      fileStream.pipe(digest)
+      fileStream.on('end', async () => {
+        digest.end()
+        const hashString = getURLForHash(digest.read())
+        console.log('Got UHRP URL', hashString)
+        await axios.post(
       `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`,
       {
         adminToken: ADMIN_TOKEN,
@@ -45,6 +52,11 @@ exports.notifier = (file, context) => {
         objectIdentifier,
         fileSize: file.size
       }
-    )
+        )
+        resolve(true)
+      })
+    } catch (e) {
+      reject(e)
+    }
   })
 }
