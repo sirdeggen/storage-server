@@ -1,4 +1,3 @@
-const path = require('path')
 const { Storage } = require('@google-cloud/storage')
 const knex =
   (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging')
@@ -11,14 +10,9 @@ const {
   NODE_ENV,
   ROUTING_PREFIX,
   HOSTING_DOMAIN,
-  GCP_BUCKET_NAME,
-  GCP_PROJECT_ID
+  GCP_BUCKET_NAME
 } = process.env
-const serviceKey = path.join(__dirname, '../../storage-creds.json')
-const storage = new Storage({
-  keyFilename: serviceKey,
-  projectId: GCP_PROJECT_ID
-})
+const storage = new Storage()
 
 module.exports = {
   type: 'post',
