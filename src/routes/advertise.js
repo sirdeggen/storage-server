@@ -64,7 +64,7 @@ module.exports = {
 
       // Set the custom time for file deletion
       await storageFile.setMetadata({
-      // The object is retained for at least 5 minutes after expiration
+        // The object is retained for at least 5 minutes after expiration
         customTime: new Date(expiryTime + 300 * 1000).toISOString()
       })
 

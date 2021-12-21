@@ -17,7 +17,7 @@ module.exports = {
   type: 'post',
   path: '/upload',
   knex,
-  summary: 'Use this route to pay an invoice and upload the data you want to host. You should specify the file in a multipart/form-data payload. You will receive back the public URL, the hash (UHRP URL) of the published file, and "published=true" if the upload was successful.',
+  summary: '(DEPRECATED) USE /pay instead for much faster uploads and future downloads on a global CDN, lower latency and payloads over 32MB. Use this route to pay an invoice and upload the data you want to host. You should specify the file in a multipart/form-data payload. You will receive back the public URL, the hash (UHRP URL) of the published file, and "published=true" if the upload was successful.',
   parameters: {
     referenceNumber: 'The reference number you received when you created the invoice.',
     file: 'The file, which should be of the size specified by the invoice.',

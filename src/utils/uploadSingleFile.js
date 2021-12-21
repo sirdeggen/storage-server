@@ -49,11 +49,6 @@ module.exports = ({
         // Define the public URL
         const publicURL = `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${objectID}`
 
-        // Set the content type for GCS
-        await bucketFile.setmetadata({
-          contentType: file.mimetype
-        })
-
         // Advertise availability with UHRP
         const adTXID = await createUHRPAdvertisement({
           hash: hashString,
