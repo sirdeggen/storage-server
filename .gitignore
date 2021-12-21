@@ -10,3 +10,5 @@ app.staging.yaml
 .npmrc
 .DS_Store
 functions.env.yaml
+prod.functions.env.yaml
+staging.functions.env.yaml

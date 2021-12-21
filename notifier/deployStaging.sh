@@ -1,0 +1,2 @@
+#!/bin/bash
+gcloud functions deploy stagingNotifier --runtime=nodejs14 --env-vars-file=staging.functions.env.yaml --entry-point=notifier --timeout=540 --trigger-event=google.storage.object.finalize --trigger-resource=staging-hashbrown.babbage.systems --source .
