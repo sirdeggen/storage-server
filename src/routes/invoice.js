@@ -102,6 +102,19 @@ module.exports = {
         })
       }
 
+      // Current architecture should support up to about 11 gigabyte files
+      // The bottleneck is in server-side hash calculation (the notifier.)
+      // The notifier times out after 540 seconds, and hashing takes time.
+      // If this changes, the limit should be re-evaluated.
+      if (fileSize > 11000000000) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_SIZE',
+          description:
+            'Currently, the maximum supported file size is 11000000000 bytes. Larger files will be supported in future versions, but consider breaking your file into chunks. Email nanostore-limits@babbage.systems if this causes you pain.'
+        })
+      }
+
       // Get the price that we will charge to host this file
       const satPrice = await getPriceForFile({ fileSize, retentionPeriod })
 

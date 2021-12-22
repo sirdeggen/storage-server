@@ -21,7 +21,8 @@ module.exports = {
     proof: 'If the payment transaction is already confirmed, just provide its merkle proof, omitting the inputs and mapiResponses fields.'
   },
   exampleResponse: {
-    uploadURL: 'https://foo.com/...'
+    uploadURL: 'https://foo.com/...',
+    publicURL: 'https://foo.com/cdn/...'
   },
   errors: [
     'ERR_NO_REF',
