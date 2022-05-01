@@ -1,5 +1,6 @@
 node_modules
 data/database.sqlite
+data/mysql-data
 .env
 storage-creds.json
 yarn-error.log

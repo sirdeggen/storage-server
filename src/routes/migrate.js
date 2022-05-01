@@ -1,7 +1,4 @@
-const knex =
-  (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging')
-    ? require('knex')(require('../../knexfile.js').production)
-    : require('knex')(require('../../knexfile.js').development)
+const knex = require('knex')(require('../../knexfile.js').production)
 const {
   MIGRATE_KEY
 } = process.env
