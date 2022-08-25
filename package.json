@@ -9,8 +9,6 @@
   "dependencies": {
     "@bugsnag/js": "^7.14.1",
     "@bugsnag/plugin-express": "^7.14.0",
-    "@cwi/remembrance": "^0.1.1",
-    "@google-cloud/billing": "^2.3.0",
     "@google-cloud/debug-agent": "^5.1.3",
     "@google-cloud/logging": "^9.6.9",
     "@google-cloud/storage": "^5.16.1",
