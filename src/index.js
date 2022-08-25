@@ -8,7 +8,6 @@ const authrite = require('authrite-express')
 const bsv = require('bsv')
 
 const { UHRP_HOST_PRIVATE_KEY } = process.env
-console.log('UHRP_HOST_PRIVATE_KEY:', UHRP_HOST_PRIVATE_KEY)
 if (process.env.NODE_ENV !== 'development') {
   require('@google-cloud/debug-agent').start({
     serviceContext: { enableCanary: false }
