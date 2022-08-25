@@ -38,8 +38,6 @@
     "start": "node src/index.js",
     "dev": "nodemon --inspect=0.0.0.0 src/index.js --watch .env --watch src --exec \"node\"",
     "build": "node scripts/build.js",
-    "gcp-build": "node scripts/build.js",
-    "nodemon": "^2.0.19",
     "test": "jest --watch"
   },
   "publishConfig": {
