@@ -59,7 +59,7 @@ module.exports = {
       }
       // Update invoice
       await knex('invoice')
-        .where({ userID: userId, identityKey: req.authrite.identityKey, orderID: req.body.orderID, referenceNumber: null, paymail: null, processed: false })
+        .where({ identityKey: req.authrite.identityKey, orderID: req.body.orderID, referenceNumber: null, paymail: null, processed: false })
         .update({ paymail: req.body.paymail, referenceNumber: req.body.referenceNumber, processed: true })
 
       // Add the payment amount to the user's balance
