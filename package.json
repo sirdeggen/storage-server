@@ -7,27 +7,39 @@
   "author": "Peer-to-peer Privacy Systems Research, LLC",
   "license": "PROPRIETARY",
   "dependencies": {
+    "@bugsnag/js": "^7.14.1",
+    "@bugsnag/plugin-express": "^7.14.0",
+    "@cwi/remembrance": "^0.1.1",
+    "@google-cloud/billing": "^2.3.0",
     "@google-cloud/debug-agent": "^5.1.3",
+    "@google-cloud/logging": "^9.6.9",
     "@google-cloud/storage": "^5.16.1",
+    "@google-cloud/tasks": "^2.4.2",
     "atfinder": "^1.0.0",
+    "authrite-express": "^0.1.5",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "bridgecast": "^0.1.1",
-    "bsv": "^1.5.4",
+    "bsv": "^1.5.6",
     "dotenv": "^8.2.0",
     "express": "^5.0.0-alpha.8",
-    "knex": "^0.20.13",
+    "knex": "^2.0.0",
+    "mongodb-atlas-api-client": "^3.2.0",
     "multer": "^1.4.2",
     "mysql": "^2.18.1",
+    "octokit": "^2.0.7",
     "prettyjson": "^1.2.1",
+    "pushdrop": "^0.1.7",
     "send-seekable": "^1.0.4",
     "uhrp-url": "^0.1.3",
-    "utxoninja": "^0.1.18"
+    "utxoninja": "^0.2.27"
   },
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js --watch .env --watch src --exec \"node\"",
+    "dev": "nodemon --inspect=0.0.0.0 src/index.js --watch .env --watch src --exec \"node\"",
     "build": "node scripts/build.js",
+    "gcp-build": "node scripts/build.js",
+    "nodemon": "^2.0.19",
     "test": "jest --watch"
   },
   "publishConfig": {
@@ -36,8 +48,8 @@
   "devDependencies": {
     "ejs": "^3.1.6",
     "jest": "^26.6.3",
-    "mock-knex": "^0.4.9",
-    "nodemon": "^2.0.4",
-    "standard": "^14.3.3"
+    "mock-knex": "^0.4.11",
+    "nodemon": "^2.0.19",
+    "standard": "^16.0.4"
   }
 }

@@ -1,8 +1,12 @@
-const knex = require('knex')(require('../../knexfile.js').production)
+const Ninja = require('utxoninja')
 const crypto = require('crypto')
+const knex =
+  process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+    ? require('knex')(require('../../knexfile.js').production)
+    : require('knex')(require('../../knexfile.js').development)
+const authenticateRequest = require('../utils/authenticateRequest')
 const bsv = require('bsv')
 const getPriceForFile = require('../utils/getPriceForFile')
-const createNewTransaction = require('../utils/createNewTransaction')
 
 const {
   MIN_HOSTING_MINUTES,
@@ -15,24 +19,16 @@ module.exports = {
   type: 'post',
   path: '/invoice',
   knex,
-  summary: 'Use this route to create an invoice for the hosting of a file. The server will respond with a reference number and some Bitcoin transaction output scripts, which you should include in a transaction that pays the invoice. You will also receive the public URL where the file would be hosted if the invoice is paid.',
+  // summary: 'Use this route to create an invoice for the hosting of a file. The server will respond with an orderID. You will also receive the public URL where the file would be hosted if the invoice is paid.'
+  summary: 'Requests an invoice for hosting the file.',
+  parameters: {
+    amount: 500
+  },
+  exampleResponse: {
+  },
   parameters: {
     fileSize: 'Specify the size of the file you would like to host in bytes',
     retentionPeriod: 'Specify the whole number of minutes that you want the file to be hosted.'
-  },
-  exampleResponse: {
-    referenceNumber: 'fjsodf+s/4Ssje==',
-    outputs: [
-      {
-        amount: 1209,
-        outputScript: '006a6d02...'
-      },
-      {
-        amount: 1234,
-        outputScript: '123456...'
-      }
-    ],
-    publicURL: 'https://foo.com/file/sodfjWdifjsa'
   },
   errors: [
     'ERR_NO_SIZE',
@@ -113,10 +109,12 @@ module.exports = {
       }
 
       // Get the price that we will charge to host this file
-      const satPrice = await getPriceForFile({ fileSize, retentionPeriod })
+      const amount = await getPriceForFile({ fileSize, retentionPeriod })
+      console.log('getPriceForFile():amount:', amount)
 
       // Insert a new file record and get the id
       const objectIdentifier = bsv.deps.bs58.encode(crypto.randomBytes(16))
+      console.log('objectIdentifier:', objectIdentifier)
       await knex('file').insert({
         fileSize,
         objectIdentifier
@@ -125,20 +123,48 @@ module.exports = {
         objectIdentifier
       }).select('fileId')
       fileId = fileId.fileId
+      console.log('fileId:', fileId)
 
-      // Create a new transaction
-      const { referenceNumber, outputs, fee } = await createNewTransaction({
-        amount: satPrice,
-        numberOfMinutesPurchased: retentionPeriod,
-        fileId,
-        knex
+      const userId = await authenticateRequest({ req, res, knex })
+      console.log('authenticateRequest():userId:', userId)
+      if (!userId) return
+      // Create a new ninja for the server
+      const ninja = new Ninja({
+        privateKey: process.env.SERVER_PRIVATE_KEY,
+        config: {
+          dojoURL: process.env.DOJO_URL
+        }
       })
 
-      // Return the public URL, reference number and outputs
-      res.status(200).json({
-        referenceNumber,
-        outputs,
-        fee,
+      // Create a new invoice record
+      const ORDER_ID = crypto.randomBytes(32).toString('base64')
+      await knex('invoice').insert({
+        orderID: ORDER_ID,
+        userID: userId,
+        identityKey: req.authrite.identityKey,
+        referenceNumber: null,
+        paymail: null,
+        amount,
+        processed: false
+      })
+
+      // Create a new transaction
+      await knex('transaction').insert({
+        referenceNumber: ORDER_ID,
+        fileId,
+        amount,
+        numberOfMinutesPurchased: retentionPeriod
+      })
+
+      // Get the server's paymail
+      const paymail = await ninja.getPaymail()
+      // Return the required info to the sender
+      // *** Why is publicURL sent by invoice? ***
+      return res.status(200).json({
+        status: 'success',
+        paymail,
+        amount,
+        ORDER_ID,
         publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}`
       })
     } catch (e) {
