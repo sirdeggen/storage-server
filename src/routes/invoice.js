@@ -1,19 +1,19 @@
 const Ninja = require('utxoninja')
 const crypto = require('crypto')
-const knex =
-  process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
-    ? require('knex')(require('../../knexfile.js').production)
-    : require('knex')(require('../../knexfile.js').development)
-const authenticateRequest = require('../utils/authenticateRequest')
-const bsv = require('bsv')
-const getPriceForFile = require('../utils/getPriceForFile')
-
 const {
+  DOJO_URL,
+  SERVER_PRIVATE_KEY,
   MIN_HOSTING_MINUTES,
   HOSTING_DOMAIN,
   ROUTING_PREFIX,
   NODE_ENV
 } = process.env
+const knex =
+  NODE_ENV === 'production' || NODE_ENV === 'staging'
+    ? require('knex')(require('../../knexfile.js').production)
+    : require('knex')(require('../../knexfile.js').development)
+const bsv = require('bsv')
+const getPriceForFile = require('../utils/getPriceForFile')
 
 module.exports = {
   type: 'post',
@@ -35,7 +35,7 @@ module.exports = {
     'ERR_NO_RETENTION_PERIOD',
     'ERR_INVALID_SIZE',
     'ERR_INVALID_RETENTION_PERIOD',
-    'ERR_INTERNAL'
+    'ERR_INTERNAL_PROCESSING_INVOICE'
   ],
   func: async (req, res) => {
     try {
@@ -110,11 +110,11 @@ module.exports = {
 
       // Get the price that we will charge to host this file
       const amount = await getPriceForFile({ fileSize, retentionPeriod })
-      console.log('getPriceForFile():amount:', amount)
+      // console.log('getPriceForFile():amount:', amount)
 
       // Insert a new file record and get the id
       const objectIdentifier = bsv.deps.bs58.encode(crypto.randomBytes(16))
-      console.log('objectIdentifier:', objectIdentifier)
+      // console.log('objectIdentifier:', objectIdentifier)
       await knex('file').insert({
         fileSize,
         objectIdentifier
@@ -123,34 +123,33 @@ module.exports = {
         objectIdentifier
       }).select('fileId')
       fileId = fileId.fileId
-      console.log('fileId:', fileId)
+      // console.log('fileId:', fileId)
 
-      const userId = await authenticateRequest({ req, res, knex })
-      console.log('authenticateRequest():userId:', userId)
-      if (!userId) return
-      // Create a new ninja for the server
       const ninja = new Ninja({
-        privateKey: process.env.SERVER_PRIVATE_KEY,
+        privateKey: SERVER_PRIVATE_KEY,
         config: {
-          dojoURL: process.env.DOJO_URL
+          dojoURL: DOJO_URL
         }
       })
 
-      // Create a new invoice record
+      // Create a new transaction record
       const ORDER_ID = crypto.randomBytes(32).toString('base64')
-      await knex('invoice').insert({
+      await knex('transaction').insert({
         orderID: ORDER_ID,
-        userID: userId,
-        identityKey: req.authrite.identityKey,
-        referenceNumber: null,
-        paymail: null,
+        fileId,
+        numberOfMinutesPurchased: retentionPeriod,
+        // *** change to reference ***
+        // referenceNumber: null,
         amount,
-        processed: false
+        paid: false,
+        identityKey: req.authrite.identityKey,
+        created_at: new Date(),
+        updated_at: new Date()
       })
 
       // Create a new transaction
       await knex('transaction').insert({
-        referenceNumber: ORDER_ID,
+        orderID: ORDER_ID,
         fileId,
         amount,
         numberOfMinutesPurchased: retentionPeriod
@@ -159,7 +158,6 @@ module.exports = {
       // Get the server's paymail
       const paymail = await ninja.getPaymail()
       // Return the required info to the sender
-      // *** Why is publicURL sent by invoice? ***
       return res.status(200).json({
         status: 'success',
         paymail,
@@ -171,8 +169,8 @@ module.exports = {
       console.error(e)
       return res.status(500).json({
         status: 'error',
-        code: 'ERR_INTERNAL',
-        description: 'An internal error has occurred.'
+        code: 'ERR_INTERNAL_PROCESSING_INVOICE',
+        description: 'An internal error has occurred while processing invoice.'
       })
     }
   }

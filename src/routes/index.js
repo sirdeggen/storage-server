@@ -1,13 +1,9 @@
 module.exports = {
   preAuthrite: [
-    require('./getemail'),
-    require('./setemail'),
-    require('./getsetupstatus'),
     require('./download'),
     require('./quote'),
     require('./oldUpload'),
-    require('./migrate'),
-    require('./advertise')
+    require('./migrate')
   ],
   postAuthrite: [
     require('./pay'),

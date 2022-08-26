@@ -1,7 +1,7 @@
 const knex = require('knex')(require('../../knexfile.js').production)
 const { Storage } = require('@google-cloud/storage')
 const path = require('path')
-const https = require('https')
+// const https = require('https')
 
 const serviceKey = path.join(__dirname, '../../storage-creds.json')
 const bucketName = process.env.GCP_BUCKET_NAME
