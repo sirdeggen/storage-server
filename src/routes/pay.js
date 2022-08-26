@@ -25,6 +25,14 @@ module.exports = {
     paymail: '',
     orderID: 'abc'
   },
+  errors: [
+    'ERR_TRANSACTION_NOT_FOUND',
+    'ERR_ALREADY_PAID',
+    'ERR_TRANSACTION_AMOUNT_DIFFERENT_TO_RECEIVED_AMOUNT',
+    'ERR_PAYMENT_INVALID',
+    'ERR_BAD_REFERENCE',
+    'ERR_INTERNAL_PAYMENT_PROCESSING'
+  ],
   exampleResponse: {
   },
   func: async (req, res) => {
