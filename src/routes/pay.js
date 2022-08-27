@@ -18,11 +18,14 @@ module.exports = {
   knex,
   summary: 'Use this route to pay an invoice and retrieve a URL to upload the data you want to host.',
   parameters: {
-    amount: 500,
     reference: 'xyz',
     description: '',
     paymail: '',
     orderID: 'abc'
+  },
+  exampleResponse: {
+    uploadURL: 'https://upload-server.com/file/new',
+    publicURL: 'https://foo.com/bar.html'
   },
   errors: [
     'ERR_TRANSACTION_NOT_FOUND',
@@ -32,8 +35,6 @@ module.exports = {
     'ERR_BAD_REFERENCE',
     'ERR_INTERNAL_PAYMENT_PROCESSING'
   ],
-  exampleResponse: {
-  },
   func: async (req, res) => {
     try {
       const ninja = new Ninja({
@@ -63,17 +64,14 @@ module.exports = {
           orderID: transaction.orderID
         })
       }
-      if (transaction.amount !== req.body.amount) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_TRANSACTION_AMOUNT_DIFFERENT_TO_RECEIVED_AMOUNT',
-          description: 'DB transaction amount[' + transaction.amount + '] is different to received amount[' + req.body.amount + '] !',
-          transactionamount: transaction.amount,
-          reqamount: req.body.amount
-        })
-      }
       // Verify the payment
-      const processed = await ninja.verifyIncomingTransaction({ senderPaymail: req.body.paymail, senderIdentityKey: req.authrite.identityKey, referenceNumber: req.body.reference, description: req.body.description, amount: transaction.amount })
+      const processed = await ninja.verifyIncomingTransaction({
+        senderPaymail: req.body.paymail,
+        senderIdentityKey: req.authrite.identityKey,
+        referenceNumber: req.body.reference,
+        description: req.body.description,
+        amount: transaction.amount
+      })
       if (!processed) {
         return res.status(400).json({
           status: 'error',
@@ -83,47 +81,28 @@ module.exports = {
       }
       // Update transaction
       await knex('transaction')
-        // TBD change to referenceNumber to reference
-        .where({ identityKey: req.authrite.identityKey, orderID: req.body.orderID, referenceNumber: null, paymail: null, paid: false })
-        // TBD No description field to update [description: req.body.description] as per Orchestrator?
-        .update({ paymail: req.body.paymail, referenceNumber: req.body.reference, paid: true, updated_at: new Date() })
-      const [updatedTransaction] = await knex('transaction').where({
-        referenceNumber: req.body.reference,
-        orderID: req.body.orderID,
-        identityKey: req.authrite.identityKey
-      }).select(
-        'fileId', 'amount', 'numberOfMinutesPurchased', 'paid'
-      )
-      if (!updatedTransaction) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_BAD_REFERENCE',
-          description: 'The reference for the transaction you provided, cannot be found.',
-          reference: req.body.reference
+        // TODO change to referenceNumber to reference
+        .where({
+          identityKey: req.authrite.identityKey,
+          orderID: req.body.orderID,
+          referenceNumber: null,
+          paymail: null,
+          paid: false
         })
-      }
+        .update({
+          paymail: req.body.paymail,
+          referenceNumber: req.body.reference,
+          paid: true,
+          updated_at: new Date()
+        })
       const [file] = await knex('file')
         .select('fileSize', 'objectIdentifier')
-        .where({ fileId: updatedTransaction.fileId })
+        .where({ fileId: transaction.fileId })
 
-      let uploadURL = 'dummy-upload-url'
-      if (NODE_ENV !== 'development') {
-        uploadURL = await getUploadURL({
-          size: file.fileSize,
-          objectIdentifier: file.objectIdentifier
-        })
-        uploadURL = uploadURL.uploadURL
-      }
-      console.log('called getUploadURL():uploadURL:', uploadURL)
-
-      // TODO need to advertise the UHRP URL after upload
-      // await knex('transaction').where({ reference }).update({
-      //   advertisementTXID: adTXID
-      // })
-      // *** Does `path` need to be updated? ***
-      // await knex('transaction')
-      //  .where({ identityKey: req.authrite.identityKey, orderID: req.body.orderID, referenceNumber: req.body.reference, paymail: req.body.paymail, paid: true })
-      //  .update({ path: uploadURL, updated_at: new Date() })
+      const { uploadURL } = await getUploadURL({
+        size: file.fileSize,
+        objectIdentifier: file.objectIdentifier
+      })
 
       return res.status(200).json({
         uploadURL,

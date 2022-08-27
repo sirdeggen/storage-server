@@ -6,6 +6,7 @@ exports.up = async knex => {
     table.string('orderID')
     table.string('paymail')
     table.string('identityKey')
+    table.dropColumn('path')
   })
 }
 
@@ -20,11 +21,12 @@ exports.down = async knex => {
     table.integer('amount')
     table.boolean('processed')
   })
-await knex.schema.table('transaction', table => {
-  table.dropColumn('identityKey')
-  table.dropColumn('paymail')
-  table.dropColumn('orderID')
-})
+  await knex.schema.table('transaction', table => {
+    table.dropColumn('identityKey')
+    table.dropColumn('paymail')
+    table.dropColumn('orderID')
+    table.bigInt('path')
+  })
   await knex.schema.table('transaction', table => {
     table.dropColumn('orderID')
     table.dropColumn('paymail')

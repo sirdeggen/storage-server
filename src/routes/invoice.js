@@ -1,5 +1,7 @@
 const Ninja = require('utxoninja')
 const crypto = require('crypto')
+const bsv = require('bsv')
+const getPriceForFile = require('../utils/getPriceForFile')
 const {
   DOJO_URL,
   SERVER_PRIVATE_KEY,
@@ -12,23 +14,22 @@ const knex =
   NODE_ENV === 'production' || NODE_ENV === 'staging'
     ? require('knex')(require('../../knexfile.js').production)
     : require('knex')(require('../../knexfile.js').development)
-const bsv = require('bsv')
-const getPriceForFile = require('../utils/getPriceForFile')
 
 module.exports = {
   type: 'post',
   path: '/invoice',
   knex,
-  // summary: 'Use this route to create an invoice for the hosting of a file. The server will respond with an orderID. You will also receive the public URL where the file would be hosted if the invoice is paid.'
-  summary: 'Requests an invoice for hosting the file.',
-  parameters: {
-    amount: 500
-  },
-  exampleResponse: {
-  },
+  summary: 'Use this route to create an invoice for the hosting of a file. The server will respond with an orderID. You will also receive the public URL where the file would be hosted if the invoice is paid.',
   parameters: {
     fileSize: 'Specify the size of the file you would like to host in bytes',
     retentionPeriod: 'Specify the whole number of minutes that you want the file to be hosted.'
+  },
+  exampleResponse: {
+    status: 'success',
+    paymail: 'ty@tyweb.us',
+    amount: 1337,
+    ORDER_ID: 'asdfsdfsd=',
+    publicURL: 'https://foo.com/bar.html'
   },
   errors: [
     'ERR_NO_SIZE',
@@ -110,7 +111,6 @@ module.exports = {
 
       // Get the price that we will charge to host this file
       const amount = await getPriceForFile({ fileSize, retentionPeriod })
-      // console.log('getPriceForFile():amount:', amount)
 
       // Insert a new file record and get the id
       const objectIdentifier = bsv.deps.bs58.encode(crypto.randomBytes(16))
@@ -138,21 +138,12 @@ module.exports = {
         orderID: ORDER_ID,
         fileId,
         numberOfMinutesPurchased: retentionPeriod,
-        // *** change to reference ***
-        // referenceNumber: null,
+        referenceNumber: null, // TODO: change to reference
         amount,
         paid: false,
         identityKey: req.authrite.identityKey,
         created_at: new Date(),
         updated_at: new Date()
-      })
-
-      // Create a new transaction
-      await knex('transaction').insert({
-        orderID: ORDER_ID,
-        fileId,
-        amount,
-        numberOfMinutesPurchased: retentionPeriod
       })
 
       // Get the server's paymail

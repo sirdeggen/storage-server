@@ -1,7 +1,7 @@
 module.exports = {
   preAuthrite: [
-    require('./download'),
-    require('./quote'), // not currently used?
+    require('./advertise'),
+    require('./quote'),
     require('./migrate')
   ],
   postAuthrite: [

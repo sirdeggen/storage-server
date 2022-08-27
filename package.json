@@ -32,7 +32,9 @@
     "start": "node src/index.js",
     "dev": "nodemon --inspect=0.0.0.0 src/index.js --watch .env --watch src --exec \"node\"",
     "build": "node scripts/build.js",
-    "test": "jest --watch"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "standard --fix ."
   },
   "publishConfig": {
     "registry": "https://npm-registry.babbage.systems/"
