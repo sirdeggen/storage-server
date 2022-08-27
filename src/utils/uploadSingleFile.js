@@ -1,3 +1,4 @@
+// *** Not currently used? ***
 const { Storage } = require('@google-cloud/storage')
 const path = require('path')
 const { getURLForFile } = require('uhrp-url')
@@ -13,7 +14,7 @@ const storage = new Storage({
 })
 const bucket = storage.bucket(bucketName)
 
-// DEPRECATED CODE !!! getUploadURL is teh correct approach
+// DEPRECATED CODE !!! getUploadURL is the correct approach
 
 module.exports = ({
   file,

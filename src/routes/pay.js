@@ -1,4 +1,4 @@
-// *** not currently used ***
+// *** not currently used but needed ***
 // const getUploadURL = require('../utils/getUploadURL')
 const Ninja = require('utxoninja')
 const {
@@ -43,7 +43,6 @@ module.exports = {
           dojoURL: DOJO_URL
         }
       })
-      // console.log('req.authrite.identityKey:', req.authrite.identityKey)
       // Find valid request transaction
       const [transaction] = await knex('transaction').where({
         identityKey: req.authrite.identityKey,
@@ -102,7 +101,6 @@ module.exports = {
           reference: req.body.reference
         })
       }
-      // console.log('get file object from DB')
       const [file] = await knex('file')
         .select('fileSize', 'objectIdentifier')
         .where({ fileId: updatedTransaction.fileId })
@@ -120,8 +118,8 @@ module.exports = {
       // await knex('transaction').where({ reference }).update({
       //   advertisementTXID: adTXID
       // })
+      // *** Does `path` need to be updated? ***
       // await knex('transaction')
-      //  // Change to referenceNumber to reference
       //  .where({ identityKey: req.authrite.identityKey, orderID: req.body.orderID, referenceNumber: req.body.reference, paymail: req.body.paymail, paid: true })
       //  .update({ path: uploadURL, updated_at: new Date() })
 

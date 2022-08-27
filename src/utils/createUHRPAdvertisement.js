@@ -1,3 +1,4 @@
+// *** Not currently used? ***
 const bsv = require('bsv')
 const { getHashFromURL } = require('uhrp-url')
 const {
