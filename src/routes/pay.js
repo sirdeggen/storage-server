@@ -1,5 +1,4 @@
-// *** not currently used but needed ***
-// const getUploadURL = require('../utils/getUploadURL')
+const getUploadURL = require('../utils/getUploadURL')
 const Ninja = require('utxoninja')
 const {
   DOJO_URL,
@@ -17,7 +16,7 @@ module.exports = {
   type: 'post',
   path: '/pay',
   knex,
-  summary: 'Use this route to submit proof of payment for nanostore hosting',
+  summary: 'Use this route to pay an invoice and retrieve a URL to upload the data you want to host.',
   parameters: {
     amount: 500,
     reference: 'xyz',
@@ -105,13 +104,13 @@ module.exports = {
         .select('fileSize', 'objectIdentifier')
         .where({ fileId: updatedTransaction.fileId })
 
-      // *** commented out for testing - use preset ***
-      const uploadURL = 'google.com/uploadurl'
-      // console.log('call getUploadURL()')
-      // const { uploadURL } = await getUploadURL({
-      //   size: file.fileSize,
-      //   objectIdentifier: file.objectIdentifier
-      // })
+      let uploadURL = 'dummy-upload-url'
+      if (NODE_ENV !== 'development') {
+        [uploadURL] = await getUploadURL({
+          size: file.fileSize,
+          objectIdentifier: file.objectIdentifier
+        })
+      }
       console.log('called getUploadURL():uploadURL:', uploadURL)
 
       // TODO need to advertise the UHRP URL after upload
