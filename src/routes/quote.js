@@ -1,4 +1,3 @@
-// *** Not currently used? ***
 const knex = require('knex')(require('../../knexfile.js').production)
 const getPriceForFile = require('../utils/getPriceForFile')
 
