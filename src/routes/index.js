@@ -1,9 +1,11 @@
-module.exports = [
-  require('./download'),
-  require('./quote'),
-  require('./invoice'),
-  require('./pay'),
-  require('./oldUpload'),
-  require('./migrate'),
-  require('./advertise')
-]
+module.exports = {
+  preAuthrite: [
+    require('./advertise'),
+    require('./quote'),
+    require('./migrate')
+  ],
+  postAuthrite: [
+    require('./pay'),
+    require('./invoice')
+  ]
+}

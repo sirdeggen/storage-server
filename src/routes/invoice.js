@@ -1,45 +1,42 @@
-const knex = require('knex')(require('../../knexfile.js').production)
+const Ninja = require('utxoninja')
 const crypto = require('crypto')
 const bsv = require('bsv')
 const getPriceForFile = require('../utils/getPriceForFile')
-const createNewTransaction = require('../utils/createNewTransaction')
-
 const {
+  DOJO_URL,
+  SERVER_PRIVATE_KEY,
   MIN_HOSTING_MINUTES,
   HOSTING_DOMAIN,
   ROUTING_PREFIX,
   NODE_ENV
 } = process.env
+const knex =
+  NODE_ENV === 'production' || NODE_ENV === 'staging'
+    ? require('knex')(require('../../knexfile.js').production)
+    : require('knex')(require('../../knexfile.js').development)
 
 module.exports = {
   type: 'post',
   path: '/invoice',
   knex,
-  summary: 'Use this route to create an invoice for the hosting of a file. The server will respond with a reference number and some Bitcoin transaction output scripts, which you should include in a transaction that pays the invoice. You will also receive the public URL where the file would be hosted if the invoice is paid.',
+  summary: 'Use this route to create an invoice for the hosting of a file. The server will respond with an orderID. You will also receive the public URL where the file would be hosted if the invoice is paid.',
   parameters: {
     fileSize: 'Specify the size of the file you would like to host in bytes',
     retentionPeriod: 'Specify the whole number of minutes that you want the file to be hosted.'
   },
   exampleResponse: {
-    referenceNumber: 'fjsodf+s/4Ssje==',
-    outputs: [
-      {
-        amount: 1209,
-        outputScript: '006a6d02...'
-      },
-      {
-        amount: 1234,
-        outputScript: '123456...'
-      }
-    ],
-    publicURL: 'https://foo.com/file/sodfjWdifjsa'
+    status: 'success',
+    paymail: 'ty@tyweb.us',
+    amount: 1337,
+    ORDER_ID: 'asdfsdfsd=',
+    publicURL: 'https://foo.com/bar.html'
   },
   errors: [
     'ERR_NO_SIZE',
     'ERR_NO_RETENTION_PERIOD',
     'ERR_INVALID_SIZE',
     'ERR_INVALID_RETENTION_PERIOD',
-    'ERR_INTERNAL'
+    'ERR_INTERNAL_PROCESSING_INVOICE'
   ],
   func: async (req, res) => {
     try {
@@ -113,10 +110,11 @@ module.exports = {
       }
 
       // Get the price that we will charge to host this file
-      const satPrice = await getPriceForFile({ fileSize, retentionPeriod })
+      const amount = await getPriceForFile({ fileSize, retentionPeriod })
 
       // Insert a new file record and get the id
       const objectIdentifier = bsv.deps.bs58.encode(crypto.randomBytes(16))
+      // console.log('objectIdentifier:', objectIdentifier)
       await knex('file').insert({
         fileSize,
         objectIdentifier
@@ -125,28 +123,45 @@ module.exports = {
         objectIdentifier
       }).select('fileId')
       fileId = fileId.fileId
+      // console.log('fileId:', fileId)
 
-      // Create a new transaction
-      const { referenceNumber, outputs, fee } = await createNewTransaction({
-        amount: satPrice,
-        numberOfMinutesPurchased: retentionPeriod,
-        fileId,
-        knex
+      const ninja = new Ninja({
+        privateKey: SERVER_PRIVATE_KEY,
+        config: {
+          dojoURL: DOJO_URL
+        }
       })
 
-      // Return the public URL, reference number and outputs
-      res.status(200).json({
-        referenceNumber,
-        outputs,
-        fee,
+      // Create a new transaction record
+      const ORDER_ID = crypto.randomBytes(32).toString('base64')
+      await knex('transaction').insert({
+        orderID: ORDER_ID,
+        fileId,
+        numberOfMinutesPurchased: retentionPeriod,
+        referenceNumber: null, // TODO: change to reference
+        amount,
+        paid: false,
+        identityKey: req.authrite.identityKey,
+        created_at: new Date(),
+        updated_at: new Date()
+      })
+
+      // Get the server's paymail
+      const paymail = await ninja.getPaymail()
+      // Return the required info to the sender
+      return res.status(200).json({
+        status: 'success',
+        paymail,
+        amount,
+        ORDER_ID,
         publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}`
       })
     } catch (e) {
       console.error(e)
       return res.status(500).json({
         status: 'error',
-        code: 'ERR_INTERNAL',
-        description: 'An internal error has occurred.'
+        code: 'ERR_INTERNAL_PROCESSING_INVOICE',
+        description: 'An internal error has occurred while processing invoice.'
       })
     }
   }
