@@ -20,7 +20,11 @@ exports.down = async knex => {
     table.integer('amount')
     table.boolean('processed')
   })
-
+await knex.schema.table('transaction', table => {
+  table.dropColumn('identityKey')
+  table.dropColumn('paymail')
+  table.dropColumn('orderID')
+})
   await knex.schema.table('transaction', table => {
     table.dropColumn('orderID')
     table.dropColumn('paymail')
