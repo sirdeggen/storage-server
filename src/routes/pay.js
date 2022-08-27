@@ -88,7 +88,9 @@ module.exports = {
         // TBD No description field to update [description: req.body.description] as per Orchestrator?
         .update({ paymail: req.body.paymail, referenceNumber: req.body.reference, paid: true, updated_at: new Date() })
       const [updatedTransaction] = await knex('transaction').where({
-        referenceNumber: req.body.reference
+        referenceNumber: req.body.reference,
+        orderID: req.body.orderID,
+        identityKey: req.authrite.identityKey
       }).select(
         'fileId', 'amount', 'numberOfMinutesPurchased', 'paid'
       )
