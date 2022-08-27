@@ -108,10 +108,11 @@ module.exports = {
 
       let uploadURL = 'dummy-upload-url'
       if (NODE_ENV !== 'development') {
-        [uploadURL] = await getUploadURL({
+        uploadURL = await getUploadURL({
           size: file.fileSize,
           objectIdentifier: file.objectIdentifier
         })
+        uploadURL = uploadURL.uploadURL
       }
       console.log('called getUploadURL():uploadURL:', uploadURL)
 
