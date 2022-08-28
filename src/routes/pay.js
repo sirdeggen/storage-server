@@ -100,17 +100,6 @@ module.exports = {
         .select('fileSize', 'objectIdentifier')
         .where({ fileId: transaction.fileId })
 
-      // TODO: will be performed by notifier, only for testing
-      // advertise the UHRP URL after upload
-      const tx = await createUHRPAdvertisement({
-        hash: 'XUU7cTfy6fA6q2neLDmzPqJnGB6o18PXKoGaWLPrH1SeWLKgdCKp',
-        expiryTime: Date.now() + 100000000
-      })
-      await knex('transaction').where({ orderID: req.body.orderID }).update({
-        advertisementTXID: tx.id,
-        updated_at: new Date()
-      })
-
       const { uploadURL } = await getUploadURL({
         size: file.fileSize,
         objectIdentifier: file.objectIdentifier
