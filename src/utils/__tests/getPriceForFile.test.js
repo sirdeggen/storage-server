@@ -1,3 +1,4 @@
+/* eslint-env jest */
 // setup env vars before require
 process.env.PRICE_PER_GB_MO = 0.03
 

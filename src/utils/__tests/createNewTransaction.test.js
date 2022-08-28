@@ -1,3 +1,4 @@
+/* eslint-env jest */
 // set up env before requiring
 process.env.SERVER_PAYMAIL = 'test@dev.test'
 

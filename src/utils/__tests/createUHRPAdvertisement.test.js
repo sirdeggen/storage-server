@@ -1,3 +1,4 @@
+/* eslint-env jest */
 // set up env vars before requiring
 process.env.UHRP_HOST_PRIVATE_KEY = '5KU2L5qbkL5MPnUK1cuC5fWamjz7aoKCAZAbKdqmChed8TTbWCZ'
 
