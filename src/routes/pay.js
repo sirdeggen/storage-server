@@ -1,5 +1,6 @@
 const getUploadURL = require('../utils/getUploadURL')
 const Ninja = require('utxoninja')
+const createUHRPAdvertisement = require('../utils/createUHRPAdvertisement')
 const {
   DOJO_URL,
   SERVER_PRIVATE_KEY,
@@ -79,6 +80,7 @@ module.exports = {
           description: 'Could not validate payment!'
         })
       }
+
       // Update transaction
       await knex('transaction')
         // TODO change to referenceNumber to reference
@@ -98,6 +100,17 @@ module.exports = {
       const [file] = await knex('file')
         .select('fileSize', 'objectIdentifier')
         .where({ fileId: transaction.fileId })
+
+      // TODO: will be performed by notifier, only for testing
+      // advertise the UHRP URL after upload
+      const tx = await createUHRPAdvertisement({
+        hash: 'XUU7cTfy6fA6q2neLDmzPqJnGB6o18PXKoGaWLPrH1SeWLKgdCKp',
+        expiryTime: Date.now() + 100000000
+      })
+      await knex('transaction').where({ orderID: req.body.orderID }).update({
+        advertisementTXID: tx.id,
+        updated_at: new Date()
+      })
 
       const { uploadURL } = await getUploadURL({
         size: file.fileSize,

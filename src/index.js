@@ -135,4 +135,5 @@ app.listen(HTTP_PORT, () => {
     .fromString(UHRP_HOST_PRIVATE_KEY)
     .toAddress()
     .toString()
+  console.log(`UHRP Host Address: ${addr}`)
 })
