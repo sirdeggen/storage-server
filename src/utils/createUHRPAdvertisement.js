@@ -7,7 +7,8 @@ const { getHashFromURL } = require('uhrp-url')
 const {
   UHRP_HOST_PRIVATE_KEY,
   SERVER_PRIVATE_KEY,
-  DOJO_URL
+  DOJO_URL,
+  NODE_ENV
 } = process.env
 
 /**
