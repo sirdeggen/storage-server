@@ -70,7 +70,7 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
   console.log('7', Buffer.from('' + expiryTime, 'utf8'))
 
   // Now that we can know the issuance ID, create the real action.
-  const actionScript = pushdrop.create({
+  const actionScript = await pushdrop.create({
     fields: [
       Buffer.from('1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG', 'utf8'),
       Buffer.from(`${preaction.txid}00000000`, 'hex'),
