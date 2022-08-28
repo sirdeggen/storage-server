@@ -91,7 +91,7 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
         ...preaction,
         outputsToRedeem: [{
           index: 0,
-          unlockingScript: pushdrop.redeem({
+          unlockingScript: await pushdrop.redeem({
             prevTxId: preaction.txid,
             outputIndex: 0,
             outputAmount: preactionAmount,
