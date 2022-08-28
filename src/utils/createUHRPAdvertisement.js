@@ -17,10 +17,12 @@ const {
  * @param {Object} obj All parameters are given in an object.
  * @param {string} obj.hash The 32-byte SHA-256 hash of the file, the UHRP (can be a URL, which has to be converted).
  * @param {Number} obj.expiryTime UTC timestamp.
-  *
+ * @param {string} obj.url The HTTPS URL where the content can be reached
+ * @param {Number} obj.contentLength The length of the content in bytes
+ *
  * @returns {Promise<Object>} The transaction object, containing `txid` identifer and `reference` for the advertisement.
  */
-module.exports = async ({ hash, expiryTime }) => {
+module.exports = async ({ hash, expiryTime, url, contentLength }) => {
   console.log('hash:', hash)
   console.log('expiryTime:', expiryTime)
   const ninja = new Ninja({
@@ -55,7 +57,7 @@ module.exports = async ({ hash, expiryTime }) => {
       script: preactionScript.toHex(),
       satoshis: preactionAmount
     }],
-    note: 'Prepare to grant permision',
+    note: 'Prepare to advertise',
     autoProcess: true
   })
   console.log('preaction:', preaction)
@@ -66,7 +68,7 @@ module.exports = async ({ hash, expiryTime }) => {
   console.log('3', Buffer.from(address, 'utf8'))
   console.log('4', hash)
   console.log('5', Buffer.from('advertise', 'utf8'))
-  console.log('6', Buffer.from(BRIDGEPORT_NODE_URL, 'utf8'))
+  console.log('6', Buffer.from(url, 'utf8'))
   console.log('7', Buffer.from('' + expiryTime, 'utf8'))
 
   // Now that we can know the issuance ID, create the real action.
@@ -75,11 +77,11 @@ module.exports = async ({ hash, expiryTime }) => {
       Buffer.from('1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG', 'utf8'),
       Buffer.from(`${preaction.txid}00000000`, 'hex'),
       Buffer.from(address, 'utf8'),
-      hash, // Already in buffer format?
-      // Buffer.from(bridgeAddress, 'utf8'), - hash replaces this BHRP bridge address
+      hash,
       Buffer.from('advertise', 'utf8'),
-      Buffer.from(BRIDGEPORT_NODE_URL, 'utf8'),
-      Buffer.from('' + expiryTime, 'utf8')
+      Buffer.from(url, 'utf8'),
+      Buffer.from('' + expiryTime, 'utf8'),
+      Buffer.from('' + contentLength, 'utf8')
     ],
     key
   })
@@ -111,20 +113,6 @@ module.exports = async ({ hash, expiryTime }) => {
   console.log('tx:', tx)
 
   try {
-    /* Don't need to bootstrap, this is a normal bridge?
-    const ownResult = await boomerang(
-      'POST',
-        `${BRIDGEPORT_NODE_URL}/processTransaction`,
-        {
-          rawTx: tx.rawTx,
-          mapiResponses: tx.mapiResponses,
-          inputs: tx.inputs,
-          bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7']
-        }
-    )
-    console.log('UHRP bootstrap result')
-    console.log(ownResult)
-    */
     await bridgecast({
       bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
       tx: {
@@ -133,12 +121,12 @@ module.exports = async ({ hash, expiryTime }) => {
         inputs: tx.inputs
       }
     })
+    return {
+      txid: new bsv.Transaction(tx.rawTx).id,
+      reference: tx.referenceNumber
+    }
   } catch (e) {
     console.error('Error sending UHRP tx to Bridgecast, ignoring...', e)
     if (global.Bugsnag) global.Bugsnag.notify(e)
-  }
-  return {
-    txid: new bsv.Transaction(tx.rawTx).id,
-    reference: tx.referenceNumber
   }
 }

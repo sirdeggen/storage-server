@@ -52,7 +52,7 @@ module.exports = {
         .file(`cdn/${req.body.objectIdentifier}`)
 
       // Create advertisement
-      const adTXID = await createUHRPAdvertisement({
+      const { txid: adTXID } = await createUHRPAdvertisement({
         hash: req.body.fileHash,
         url: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,
         expiryTime,
