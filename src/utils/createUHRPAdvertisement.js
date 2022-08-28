@@ -112,14 +112,16 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
   console.log('tx:', tx)
 
   try {
-    await bridgecast({
-      bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
-      bridgeportResolvers:
+    const bridgeportResolvers =
         NODE_ENV === 'production'
           ? undefined
           : NODE_ENV === 'staging'
             ? ['https://staging-bridgeport.babbage.systems']
-            : ['http://localhost:3103'],
+          : ['http://localhost:3103']
+    console.log(bridgeportResolvers)
+    await bridgecast({
+      bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
+      bridgeportResolvers,
       tx: {
         rawTx: tx.rawTx,
         mapiResponses: tx.mapiResponses,
