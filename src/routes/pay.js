@@ -1,6 +1,5 @@
 const getUploadURL = require('../utils/getUploadURL')
 const Ninja = require('utxoninja')
-const createUHRPAdvertisement = require('../utils/createUHRPAdvertisement')
 const {
   DOJO_URL,
   SERVER_PRIVATE_KEY,
