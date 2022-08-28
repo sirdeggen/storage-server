@@ -1,3 +1,4 @@
+/* eslint-env jest */
 const invoice = require('../invoice')
 const mockKnex = require('mock-knex')
 const getPriceForFile = require(

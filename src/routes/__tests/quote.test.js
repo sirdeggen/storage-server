@@ -1,3 +1,4 @@
+/* eslint-env jest */
 const quote = require('../quote')
 const getPriceForFile = require(
   '../../utils/getPriceForFile'

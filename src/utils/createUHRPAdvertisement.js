@@ -6,7 +6,6 @@ const { getHashFromURL } = require('uhrp-url')
 
 const {
   UHRP_HOST_PRIVATE_KEY,
-  HOSTING_DOMAIN,
   SERVER_PRIVATE_KEY,
   DOJO_URL
 } = process.env
@@ -61,7 +60,6 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
     autoProcess: true
   })
   console.log('preaction:', preaction)
-  console.log('BRIDGEPORT_NODE_URL:', BRIDGEPORT_NODE_URL)
 
   console.log('1', Buffer.from('1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG', 'utf8'))
   console.log('2', Buffer.from(`${preaction.txid}00000000`, 'hex'))
