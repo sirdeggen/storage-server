@@ -6,7 +6,7 @@ const { getHashFromURL } = require('uhrp-url')
 
 const {
   UHRP_HOST_PRIVATE_KEY,
-  BRIDGEPORT_NODE_URL,
+  HOSTING_DOMAIN,
   SERVER_PRIVATE_KEY,
   DOJO_URL
 } = process.env
