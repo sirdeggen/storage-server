@@ -1,4 +1,13 @@
 #!/bin/bash
+
+if [ $NODE_ENV = 'production' ] || [ $NODE_ENV = 'staging' ]
+then
+  echo "$GCP_STORAGE_CREDS" > /app/storage-creds.json
+  npm run build
+  node src/index.js
+  exit
+fi
+
 until nc -z -v -w30 nanostore-mysql 3114
 do
   echo "Waiting for database connection..."

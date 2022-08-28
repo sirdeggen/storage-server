@@ -1,0 +1,55 @@
+name: Deployment
+on:
+  push:
+    branches:
+      - master
+      - production
+
+env:
+  CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
+  GCR_HOST: us.gcr.io
+  GOOGLE_PROJECT_ID: babbage-private
+  GCR_IMAGE_NAME: nanostore
+  
+jobs:
+  build:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+         ref: ${{ env.CURRENT_BRANCH }}
+      - name: Docker Layer Caching
+        uses: satackey/action-docker-layer-caching@v0.0.11
+      - uses: RafikFarhad/push-to-gcr-github-action@v4.1
+        with:
+          gcloud_service_key: ${{ secrets.DOCKER_REGISTRY_PUSH_KEY }}
+          registry: ${{ env.GCR_HOST }}
+          project_id: ${{ env.GOOGLE_PROJECT_ID }}
+          image_name: ${{ env.GCR_IMAGE_NAME }}
+          image_tag: ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
+      - name: "Create service description file"
+        run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml"
+        env:
+          IMAGE: "${{ env.GCR_HOST }}/${{ env.GOOGLE_PROJECT_ID }}/${{ env.GCR_IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}"
+          SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'default' || 'staging' }}
+          NODE_ENV:     ${{ env.CURRENT_BRANCH =='production' && secrets.PROD_NODE_ENV || secrets.STAGING_NODE_ENV }}
+          HOSTING_DOMAIN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HOSTING_DOMAIN || secrets.STAGING_HOSTING_DOMAIN }}
+          ROUTING_PREFIX: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_ROUTING_PREFIX || secrets.STAGING_ROUTING_PREFIX }}
+          KNEX_DB_CONNECTION: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_KNEX_DB_CONNECTION || secrets.STAGING_KNEX_DB_CONNECTION }}
+          KNEX_DB_CLIENT: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_KNEX_DB_CLIENT || secrets.STAGING_KNEX_DB_CLIENT }}
+          MIGRATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIGRATE_KEY || secrets.STAGING_MIGRATE_KEY }}
+          PRICE_PER_GB_MO: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_PRICE_PER_GB_MO || secrets.STAGING_PRICE_PER_GB_MO }}
+          GCP_STORAGE_CREDS: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_STORAGE_CREDS || secrets.STAGING_GCP_STORAGE_CREDS }}
+          GCP_BUCKET_NAME: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_BUCKET_NAME || secrets.STAGING_GCP_BUCKET_NAME }}
+          GCP_PROJECT_ID: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_PROJECT_ID || secrets.STAGING_GCP_PROJECT_ID }}
+          UHRP_HOST_PRIVATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_UHRP_HOST_PRIVATE_KEY || secrets.STAGING_UHRP_HOST_PRIVATE_KEY }}
+          SERVER_PRIVATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_SERVER_PRIVATE_KEY || secrets.STAGING_SERVER_PRIVATE_KEY }}
+          MIN_HOSTING_MINUTES: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIN_HOSTING_MINUTES || secrets.STAGING_MIN_HOSTING_MINUTES }}
+          SERVER_PAYMAIL: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_SERVER_PAYMAIL || secrets.STAGING_SERVER_PAYMAIL }}
+          ADMIN_TOKEN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_ADMIN_TOKEN || secrets.STAGING_ADMIN_TOKEN }}
+          DOJO_URL: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_DOJO_URL || secrets.STAGING_DOJO_URL }}
+      - uses: google-github-actions/deploy-cloudrun@main
+        with:
+          credentials: ${{ secrets.gcp_deploy_creds }}
+          metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
