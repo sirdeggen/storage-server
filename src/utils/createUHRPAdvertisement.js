@@ -113,18 +113,24 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
   try {
     await bridgecast({
       bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
+      bridgeportResolvers:
+        NODE_ENV === 'production'
+          ? undefined
+          : NODE_ENV === 'staging'
+            ? ['https://staging-bridgeport.babbage.systems']
+            : ['http://localhost:3103'],
       tx: {
         rawTx: tx.rawTx,
         mapiResponses: tx.mapiResponses,
         inputs: tx.inputs
       }
     })
-    return {
-      txid: new bsv.Transaction(tx.rawTx).id,
-      reference: tx.referenceNumber
-    }
   } catch (e) {
     console.error('Error sending UHRP tx to Bridgecast, ignoring...', e)
     if (global.Bugsnag) global.Bugsnag.notify(e)
+  }
+  return {
+    txid: new bsv.Transaction(tx.rawTx).id,
+    reference: tx.referenceNumber
   }
 }
