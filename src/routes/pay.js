@@ -79,6 +79,7 @@ module.exports = {
           description: 'Could not validate payment!'
         })
       }
+
       // Update transaction
       await knex('transaction')
         // TODO change to referenceNumber to reference
