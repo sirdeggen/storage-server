@@ -21,7 +21,7 @@ module.exports = {
     orderID: 'xyz',
     transaction: 'transaction envelope (rawTx, mapiResponses, inputs, proof), with additional outputs array containing key derivation information',
     'transaction.outputs': 'An array of outputs descriptors, each including vout, satoshis, derivationPrefix, and derivationSuffix',
-    description: 'Transaction description',
+    description: 'Transaction description'
   },
   exampleResponse: {
     status: 'success',
@@ -37,7 +37,6 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
-
       // Find valid request transaction
       const [transaction] = await knex('transaction').where({
         identityKey: req.authrite.identityKey,

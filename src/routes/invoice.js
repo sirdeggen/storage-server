@@ -1,4 +1,3 @@
-const Ninja = require('utxoninja')
 const crypto = require('crypto')
 const bsv = require('bsv')
 const getPriceForFile = require('../utils/getPriceForFile')
@@ -139,7 +138,7 @@ module.exports = {
         updated_at: new Date()
       })
 
-       // Return the required info to the sender
+      // Return the required info to the sender
       return res.status(200).json({
         status: 'success',
         message: 'Use /pay to submit the payment.',
