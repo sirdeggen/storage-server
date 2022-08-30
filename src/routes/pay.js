@@ -18,12 +18,13 @@ module.exports = {
   knex,
   summary: 'Use this route to pay an invoice and retrieve a URL to upload the data you want to host.',
   parameters: {
-    reference: 'xyz',
-    description: '',
-    paymail: '',
-    orderID: 'abc'
+    orderID: 'xyz',
+    transaction: 'transaction envelope (rawTx, mapiResponses, inputs, proof), with additional outputs array containing key derivation information',
+    'transaction.outputs': 'An array of outputs descriptors, each including vout, satoshis, derivationPrefix, and derivationSuffix',
+    description: 'Transaction description',
   },
   exampleResponse: {
+    status: 'success',
     uploadURL: 'https://upload-server.com/file/new',
     publicURL: 'https://foo.com/bar.html'
   },
@@ -37,12 +38,7 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
-      const ninja = new Ninja({
-        privateKey: SERVER_PRIVATE_KEY,
-        config: {
-          dojoURL: DOJO_URL
-        }
-      })
+
       // Find valid request transaction
       const [transaction] = await knex('transaction').where({
         identityKey: req.authrite.identityKey,
@@ -64,15 +60,26 @@ module.exports = {
           orderID: transaction.orderID
         })
       }
-      // Verify the payment
-      const processed = await ninja.verifyIncomingTransaction({
-        senderPaymail: req.body.paymail,
+      req.body.transaction.outputs = req.body.transaction.outputs.map(x => ({
+        ...x,
+        senderIdentityKey: req.authrite.identityKey
+      }))
+      const ninja = new Ninja({
+        privateKey: SERVER_PRIVATE_KEY,
+        config: {
+          dojoURL: DOJO_URL
+        }
+      })
+      
+      // Submit and verify the payment
+      const processedTransaction = await ninja.submitDirectTransaction({
+        protocol: '3241645161d8',
+        transaction: req.body.transaction,
         senderIdentityKey: req.authrite.identityKey,
-        referenceNumber: req.body.reference,
-        description: req.body.description,
+        note: req.body.description,
         amount: transaction.amount
       })
-      if (!processed) {
+      if (!processedTransaction) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_PAYMENT_INVALID',
@@ -86,13 +93,10 @@ module.exports = {
         .where({
           identityKey: req.authrite.identityKey,
           orderID: req.body.orderID,
-          referenceNumber: null,
-          paymail: null,
           paid: false
         })
         .update({
-          paymail: req.body.paymail,
-          referenceNumber: req.body.reference,
+          referenceNumber: processedTransaction.reference,
           paid: true,
           updated_at: new Date()
         })

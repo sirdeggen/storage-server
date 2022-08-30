@@ -3,7 +3,6 @@ const crypto = require('crypto')
 const bsv = require('bsv')
 const getPriceForFile = require('../utils/getPriceForFile')
 const {
-  DOJO_URL,
   SERVER_PRIVATE_KEY,
   MIN_HOSTING_MINUTES,
   HOSTING_DOMAIN,
@@ -26,7 +25,8 @@ module.exports = {
   },
   exampleResponse: {
     status: 'success',
-    paymail: 'ty@tyweb.us',
+    identityKey: 'sdjlasldfj',
+    message: 'Use /pay to submit the payment.',
     amount: 1337,
     ORDER_ID: 'asdfsdfsd=',
     publicURL: 'https://foo.com/bar.html'
@@ -125,13 +125,6 @@ module.exports = {
       fileId = fileId.fileId
       // console.log('fileId:', fileId)
 
-      const ninja = new Ninja({
-        privateKey: SERVER_PRIVATE_KEY,
-        config: {
-          dojoURL: DOJO_URL
-        }
-      })
-
       // Create a new transaction record
       const ORDER_ID = crypto.randomBytes(32).toString('base64')
       await knex('transaction').insert({
@@ -146,12 +139,11 @@ module.exports = {
         updated_at: new Date()
       })
 
-      // Get the server's paymail
-      const paymail = await ninja.getPaymail()
-      // Return the required info to the sender
+       // Return the required info to the sender
       return res.status(200).json({
         status: 'success',
-        paymail,
+        message: 'Use /pay to submit the payment.',
+        identityKey: bsv.PrivateKey.fromHex(SERVER_PRIVATE_KEY).publicKey.toString(),
         amount,
         ORDER_ID,
         publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}`
