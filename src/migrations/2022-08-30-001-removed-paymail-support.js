@@ -5,4 +5,7 @@ exports.up = async knex => {
 }
 
 exports.down = async knex => {
+  await knex.schema.table('transaction', table => {
+    table.string('paymail')
+  })
 }
