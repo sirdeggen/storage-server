@@ -33,7 +33,6 @@ module.exports = {
     'ERR_ALREADY_PAID',
     'ERR_TRANSACTION_AMOUNT_DIFFERENT_TO_RECEIVED_AMOUNT',
     'ERR_PAYMENT_INVALID',
-    'ERR_BAD_REFERENCE',
     'ERR_INTERNAL_PAYMENT_PROCESSING'
   ],
   func: async (req, res) => {
@@ -56,7 +55,7 @@ module.exports = {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_ALREADY_PAID',
-          description: `The reference you have provided is attached to an invoice that was already paid and is for Order Id ${transaction.orderID}`,
+          description: `The order id you have provided is attached to an invoice that was already paid and is for Order Id ${transaction.orderID}`,
           orderID: transaction.orderID
         })
       }
@@ -70,7 +69,7 @@ module.exports = {
           dojoURL: DOJO_URL
         }
       })
-      
+
       // Submit and verify the payment
       const processedTransaction = await ninja.submitDirectTransaction({
         protocol: '3241645161d8',
