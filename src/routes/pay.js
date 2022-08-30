@@ -86,15 +86,13 @@ module.exports = {
       }
 
       // Update transaction
-      await knex('transaction')
-        // TODO change to referenceNumber to reference
-        .where({
-          identityKey: req.authrite.identityKey,
-          orderID: req.body.orderID,
-          paid: false
-        })
+      await knex('transaction').where({
+        identityKey: req.authrite.identityKey,
+        orderID: req.body.orderID,
+        paid: false
+      })
         .update({
-          referenceNumber: processedTransaction.reference,
+          referenceNumber: processedTransaction.reference, // TODO change to referenceNumber to reference
           paid: true,
           updated_at: new Date()
         })
