@@ -33,7 +33,11 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', '*')
   res.header('Access-Control-Expose-Headers', '*')
   res.header('Access-Control-Allow-Private-Network', 'true')
-  next()
+  if ('OPTIONS' === req.method) {
+    res.send(200)
+  } else {
+    next()
+  }
 })
 
 app.use((req, res, next) => {
@@ -50,12 +54,6 @@ app.use((req, res, next) => {
 })
 
 app.use(express.static('public'))
-
-app.options('*', (req, res) =>
-  res.status(200).json({
-    message: 'Send a POST request to see the results.'
-  })
-)
 
 // Unsecured pre-Authrite routes are added first
 
