@@ -70,14 +70,25 @@ module.exports = {
       })
 
       // Submit and verify the payment
-      const processedTransaction = await ninja.submitDirectTransaction({
-        protocol: '3241645161d8',
-        transaction: req.body.transaction,
-        senderIdentityKey: req.authrite.identityKey,
-        note: `payment for orderID:${req.body.orderID}`,
-        derivationPrefix: req.body.derivationPrefix,
-        amount: transaction.amount
-      })
+      let processedTransaction
+      try {
+        processedTransaction = await ninja.submitDirectTransaction({
+          protocol: '3241645161d8',
+          transaction: req.body.transaction,
+          senderIdentityKey: req.authrite.identityKey,
+          note: `payment for orderID:${req.body.orderID}`,
+          derivationPrefix: req.body.derivationPrefix,
+          amount: transaction.amount
+        })
+      } catch (e) { // Propagate processing errors to the client
+        if (!e.code) throw e
+        return res.status(400).json({
+          status: 'error',
+          code: e.code,
+          description: e.message,
+          outputIndex: e.outputIndex
+        })
+      }
       if (!processedTransaction) {
         return res.status(400).json({
           status: 'error',
