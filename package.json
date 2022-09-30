@@ -12,7 +12,7 @@
     "@google-cloud/debug-agent": "^5.1.3",
     "@google-cloud/storage": "^5.16.1",
     "atfinder": "^1.0.0",
-    "authrite-express": "^0.2.2",
+    "authrite-express": "^0.2.3",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "bridgecast": "^0.1.4",
