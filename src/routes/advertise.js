@@ -54,7 +54,7 @@ module.exports = {
       // Create advertisement
       const { txid: adTXID } = await createUHRPAdvertisement({
         hash: req.body.fileHash,
-        url: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,
+        url: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,
         expiryTime,
         contentLength: req.body.fileSize
       })
