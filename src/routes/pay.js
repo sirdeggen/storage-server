@@ -119,7 +119,7 @@ module.exports = {
 
       return res.status(200).json({
         uploadURL,
-        publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${file.objectIdentifier}`,
+        publicURL: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${file.objectIdentifier}`,
         status: 'success'
       })
     } catch (e) {
