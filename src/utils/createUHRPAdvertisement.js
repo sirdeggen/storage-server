@@ -1,6 +1,6 @@
 const bsv = require('bsv')
 const Ninja = require('utxoninja')
-const bridgecast = require('bridgecast')
+const boomerang = require('boomerang-http')
 const pushdrop = require('pushdrop')
 const { getHashFromURL } = require('uhrp-url')
 
@@ -19,10 +19,17 @@ const {
  * @param {Number} obj.expiryTime UTC timestamp.
  * @param {string} obj.url The HTTPS URL where the content can be reached
  * @param {Number} obj.contentLength The length of the content in bytes
- *
+ * @param {string} obj.confederacyHost HTTPS Url for for the Confederacy host with default setting.
+
  * @returns {Promise<Object>} The transaction object, containing `txid` identifer and `reference` for the advertisement.
  */
-module.exports = async ({ hash, expiryTime, url, contentLength }) => {
+module.exports = async ({   
+  hash, 
+  expiryTime, 
+  url, 
+  contentLength,
+  confederacyHost = 'https://confederacy.babbage.systems'
+}) => {
   console.log('hash:', hash)
   console.log('expiryTime:', expiryTime)
   const ninja = new Ninja({
@@ -104,24 +111,18 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
   console.log('tx:', tx)
 
   try {
-    const bridgeportResolvers =
-        NODE_ENV === 'production'
-          ? undefined
-          : NODE_ENV === 'staging'
-            ? ['https://staging-bridgeport.babbage.systems']
-          : ['http://localhost:3103']
-    console.log(bridgeportResolvers)
-    await bridgecast({
-      bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
-      bridgeportResolvers,
-      tx: {
-        rawTx: tx.rawTx,
-        mapiResponses: tx.mapiResponses,
-        inputs: tx.inputs
+    await boomerang(
+      'POST',
+      `${confederacyHost}/submit`,
+      {
+        inputs,
+        mapiResponses,
+        rawTx: transactionHex,
+        topics: ['UHRP']
       }
-    })
+    )    
   } catch (e) {
-    console.error('Error sending UHRP tx to Bridgecast, ignoring...', e)
+    console.error('Error sending UHRP tx to Confederacy host, ignoring...', e)
     if (global.Bugsnag) global.Bugsnag.notify(e)
   }
   return {
