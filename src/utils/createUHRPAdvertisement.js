@@ -111,8 +111,11 @@ module.exports = async ({
   console.log('tx:', tx)
 
   try {
+    confederacyHost = NODE_ENV === 'staging'
+      ? 'https://staging-confederacy.babbage.systems'
+      : confederacyHost  
     await boomerang(
-      'POST',
+     'POST',
       `${confederacyHost}/submit`,
       {
         inputs,
