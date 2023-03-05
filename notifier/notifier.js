@@ -36,6 +36,7 @@ exports.notifier = (file, context) => {
 
   return new Promise((resolve, reject) => {
     try {
+      debugger
       const storageFile = storage.bucket(file.bucket).file(file.name)
       const digest = crypto.createHash('sha256')
       const fileStream = storageFile.createReadStream()
@@ -45,7 +46,7 @@ exports.notifier = (file, context) => {
         const hashString = getURLForHash(digest.read())
         console.log('Got UHRP URL', hashString)
         await axios.post(
-      `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`,
+      `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`, // ${NODE_ENV === 'development' ? 'http' : 'https'}://
       {
         adminToken: ADMIN_TOKEN,
         fileHash: hashString,

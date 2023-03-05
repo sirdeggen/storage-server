@@ -33,7 +33,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', '*')
   res.header('Access-Control-Expose-Headers', '*')
   res.header('Access-Control-Allow-Private-Network', 'true')
-  if ('OPTIONS' === req.method) {
+  if (req.method === 'OPTIONS') {
     res.send(200)
   } else {
     next()

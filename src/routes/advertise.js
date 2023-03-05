@@ -52,6 +52,7 @@ module.exports = {
         .file(`cdn/${req.body.objectIdentifier}`)
 
       // Create advertisement
+      debugger
       const { txid: adTXID } = await createUHRPAdvertisement({
         hash: req.body.fileHash,
         url: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,

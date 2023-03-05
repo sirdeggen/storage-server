@@ -43,7 +43,6 @@ module.exports = {
         fileSize,
         retentionPeriod
       } = req.body
-
       // Handle missing fields
       if (!fileSize) {
         return res.status(400).json({
@@ -145,7 +144,7 @@ module.exports = {
         identityKey: bsv.PrivateKey.fromHex(SERVER_PRIVATE_KEY).publicKey.toString(),
         amount,
         ORDER_ID,
-        publicURL: `${NODE_ENV === 'development' ? 'http' : 'https'}://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}`
+        publicURL: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}` // ${NODE_ENV === 'development' ? 'http' : 'https'}://
       })
     } catch (e) {
       console.error(e)
