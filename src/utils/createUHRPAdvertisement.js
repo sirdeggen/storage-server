@@ -80,7 +80,7 @@ module.exports = async ({
       method: 'POST',
       body: {
         inputs: tx.inputs,
-        mapiResponses: tx.mapiResponses, // ? Where does the transaction get processed?
+        mapiResponses: tx.mapiResponses,
         rawTx: tx.rawTx,
         topics: ['UHRP']
       }

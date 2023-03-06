@@ -1,5 +1,13 @@
+version: '3.8'
+networks:
+  babnet:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/23
+
 services:
   nanostore:
+    hostname: 'nanostore'
     build: .
     depends_on: 
       - nanostore-mysql
@@ -9,6 +17,8 @@ services:
     ports:
       - "3104:3104"
       - "9229:9229"
+    networks:
+      - babnet
     command: node --inspect=0.0.0.0 ./src/index.js
     environment:
       ROUTING_PREFIX: ''
