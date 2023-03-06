@@ -5,7 +5,7 @@ const prettyjson = require('prettyjson')
 const sendSeekable = require('send-seekable')
 const { preAuthrite, postAuthrite } = require('./routes')
 const authrite = require('authrite-express')
-const bsv = require('bsv')
+const bsv = require('babbage-bsv')
 
 const {
   UHRP_HOST_PRIVATE_KEY,

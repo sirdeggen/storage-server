@@ -1,5 +1,5 @@
 const crypto = require('crypto')
-const bsv = require('bsv')
+const bsv = require('babbage-bsv')
 const getPriceForFile = require('../utils/getPriceForFile')
 const {
   SERVER_PRIVATE_KEY,

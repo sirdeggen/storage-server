@@ -1,4 +1,4 @@
-const bsv = require('bsv')
+const bsv = require('babbage-bsv')
 const Ninja = require('utxoninja')
 const { Authrite } = require('authrite-js')
 const pushdrop = require('pushdrop')
@@ -48,30 +48,6 @@ module.exports = async ({
   expiryTime = parseInt(expiryTime / 1000)
   console.log('expiryTime:', expiryTime)
 
-  // TODO: Improve this.
-  /*
-   When we can spend UTXOs from specific output baskets with Dojo, and know which ones we are going to spend as input, we can generate the issuance ID without a preaction spend. The only purpose of the preaction spend is to move coins to a specific outpoint that can be spent and reference as the issuance ID for the pushDrop data structure.
-  */
-  // This moves some satoshis into a known place where they can be spent from.
-  // This does not need to be notified with the bridge.
-  // const preactionScript = bsv.Script.buildPublicKeyOut(
-  //   key.publicKey
-  // )
-  // const preactionAmount = 1000
-  // const preaction = await ninja.getTransactionWithOutputs({
-  //   outputs: [{
-  //     script: preactionScript.toHex(),
-  //     satoshis: preactionAmount
-  //   }],
-  //   labels: [
-  //     'nanostore'
-  //   ],
-  //   note: 'Prepare to advertise',
-  //   autoProcess: true
-  // })
-  // console.log('preaction:', preaction)
-
-  // Now that we can know the issuance ID, create the real action.
   const actionScript = await pushdrop.create({
     fields: [
       Buffer.from('1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG', 'utf8'),
