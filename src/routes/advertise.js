@@ -20,7 +20,7 @@ module.exports = {
     adminToken: 'Server admin token',
     fileHash: 'The UHRP hash to advertise',
     objectIdentifier: 'The ID of this contract',
-    contentLength: 'The length of the file'
+    fileSize: 'The length of the file'
   },
   exampleResponse: {
     status: 'success'
@@ -57,7 +57,11 @@ module.exports = {
         url: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,
         expiryTime,
         contentLength: req.body.fileSize,
-        confederacyHost: NODE_ENV === 'production' ? 'https://confederacy.babbage.systems' : 'https://staging-confederacy.babbage.systems'
+        confederacyHost: NODE_ENV === 'development'
+          ? 'http://localhost:3002'
+          : process.env.ENV === 'staging'
+            ? 'https://staging-confederacy.babbage.systems'
+            : undefined
       })
 
       // Set the custom time for file deletion
