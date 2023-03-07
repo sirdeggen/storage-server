@@ -52,12 +52,12 @@ module.exports = {
         .file(`cdn/${req.body.objectIdentifier}`)
 
       // Create advertisement
-      debugger
       const { txid: adTXID } = await createUHRPAdvertisement({
         hash: req.body.fileHash,
         url: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,
         expiryTime,
-        contentLength: req.body.fileSize
+        contentLength: req.body.fileSize,
+        confederacyHost: NODE_ENV === 'production' ? 'https://confederacy.babbage.systems' : 'https://staging-confederacy.babbage.systems'
       })
 
       // Set the custom time for file deletion
