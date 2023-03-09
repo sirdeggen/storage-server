@@ -59,7 +59,7 @@ module.exports = {
         contentLength: req.body.fileSize,
         confederacyHost: NODE_ENV === 'development'
           ? 'http://localhost:3002'
-          : process.env.ENV === 'staging'
+          : NODE_ENV === 'staging'
             ? 'https://staging-confederacy.babbage.systems'
             : undefined
       })
@@ -90,7 +90,7 @@ module.exports = {
       res.status(401).json({
         status: 'error',
         code: 'ERR_UNAUTHORIZED',
-        description: 'Migrate key is invalid'
+        description: 'Failed to advertise hosting commitment!'
       })
     }
   }
