@@ -79,9 +79,9 @@ module.exports = async ({
     const response = await new Authrite({ clientPrivateKey: SERVER_PRIVATE_KEY }).request(`${confederacyHost}/submit`, {
       method: 'POST',
       body: {
+        rawTx: tx.rawTx,
         inputs: tx.inputs,
         mapiResponses: tx.mapiResponses,
-        rawTx: tx.rawTx,
         topics: ['UHRP']
       }
     })
