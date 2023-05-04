@@ -1,5 +1,13 @@
+version: '3.8'
+networks:
+  babnet:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/23
+
 services:
   nanostore:
+    hostname: 'nanostore'
     build: .
     depends_on: 
       - nanostore-mysql
@@ -8,15 +16,21 @@ services:
     #   - "./src:/app/src"
     ports:
       - "3104:3104"
+      - "9229:9229"
+    networks:
+      - babnet
+    command: node --inspect=0.0.0.0 ./src/index.js
     environment:
       ROUTING_PREFIX: ''
       MIGRATE_KEY: 'my-great-key'
       NODE_ENV: 'development'
       HOSTING_DOMAIN: 'http://localhost:3104'
+      DOJO_URL: 'https://staging-dojo.babbage.systems'
       ADMIN_TOKEN: 'admin-token'
       HTTP_PORT: 3104
       PRICE_PER_GB_MO: 0.03
       UHRP_HOST_PRIVATE_KEY: '5KKGHf1dZpJ1L4aQTGCrVL4q3y5iwbcf9YcWS3oXynrWjaxS2LD'
+      SERVER_PRIVATE_KEY: 'ab93af021feaab26a9adff360fc8a32da645539985a0adfcc2cecbfe76bb4e41'
       SERVER_XPRIV: 'xprv9s21ZrQH143K3GN3VANh6bt72CgqhysD35WrbZWq7zJMg9Jegv7qPhgCy1To8PHW8fJoa4EDLCx73FK8Ljfg64mW9XK9g13xkMwZKQPWZ9Y'
       MIN_HOSTING_MINUTES: 15
       GCP_BUCKET_NAME: 'staging-hashbrown.babbage.systems'

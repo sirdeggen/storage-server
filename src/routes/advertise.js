@@ -20,7 +20,7 @@ module.exports = {
     adminToken: 'Server admin token',
     fileHash: 'The UHRP hash to advertise',
     objectIdentifier: 'The ID of this contract',
-    contentLength: 'The length of the file'
+    fileSize: 'The length of the file'
   },
   exampleResponse: {
     status: 'success'
@@ -56,7 +56,12 @@ module.exports = {
         hash: req.body.fileHash,
         url: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${req.body.objectIdentifier}`,
         expiryTime,
-        contentLength: req.body.fileSize
+        contentLength: req.body.fileSize,
+        confederacyHost: NODE_ENV === 'development'
+          ? 'http://localhost:3002'
+          : NODE_ENV === 'staging'
+            ? 'https://staging-confederacy.babbage.systems'
+            : undefined
       })
 
       // Set the custom time for file deletion
@@ -85,7 +90,7 @@ module.exports = {
       res.status(401).json({
         status: 'error',
         code: 'ERR_UNAUTHORIZED',
-        description: 'Migrate key is invalid'
+        description: 'Failed to advertise hosting commitment!'
       })
     }
   }

@@ -1,14 +1,13 @@
 const bsv = require('babbage-bsv')
 const Ninja = require('utxoninja')
-const bridgecast = require('bridgecast')
+const { Authrite } = require('authrite-js')
 const pushdrop = require('pushdrop')
 const { getHashFromURL } = require('uhrp-url')
 
 const {
   UHRP_HOST_PRIVATE_KEY,
   SERVER_PRIVATE_KEY,
-  DOJO_URL,
-  NODE_ENV
+  DOJO_URL
 } = process.env
 
 /**
@@ -19,10 +18,17 @@ const {
  * @param {Number} obj.expiryTime UTC timestamp.
  * @param {string} obj.url The HTTPS URL where the content can be reached
  * @param {Number} obj.contentLength The length of the content in bytes
- *
+ * @param {string} obj.confederacyHost HTTPS Url for for the Confederacy host with default setting.
+
  * @returns {Promise<Object>} The transaction object, containing `txid` identifer and `reference` for the advertisement.
  */
-module.exports = async ({ hash, expiryTime, url, contentLength }) => {
+module.exports = async ({
+  hash,
+  expiryTime,
+  url,
+  contentLength,
+  confederacyHost = 'https://confederacy.babbage.systems'
+}) => {
   console.log('hash:', hash)
   console.log('expiryTime:', expiryTime)
   const ninja = new Ninja({
@@ -42,31 +48,9 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
   expiryTime = parseInt(expiryTime / 1000)
   console.log('expiryTime:', expiryTime)
 
-  // TODO: Improve this.
-  /*
-   When we can spend UTXOs from specific output baskets with Dojo, and know which ones we are going to spend as input, we can generate the issuance ID without a preaction spend. The only purpose of the preaction spend is to move coins to a specific outpoint that can be spent and reference as the issuance ID for the pushDrop data structure.
-  */
-  // This moves some satoshis into a known place where they can be spent from.
-  // This does not need to be notified with the bridge.
-  const preactionScript = bsv.Script.buildPublicKeyOut(
-    key.publicKey
-  )
-  const preactionAmount = 1000
-  const preaction = await ninja.getTransactionWithOutputs({
-    outputs: [{
-      script: preactionScript.toHex(),
-      satoshis: preactionAmount
-    }],
-    note: 'Prepare to advertise',
-    autoProcess: true
-  })
-  console.log('preaction:', preaction)
-
-  // Now that we can know the issuance ID, create the real action.
   const actionScript = await pushdrop.create({
     fields: [
       Buffer.from('1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG', 'utf8'),
-      Buffer.from(`${preaction.txid}00000000`, 'hex'),
       Buffer.from(address, 'utf8'),
       hash,
       Buffer.from('advertise', 'utf8'),
@@ -76,52 +60,41 @@ module.exports = async ({ hash, expiryTime, url, contentLength }) => {
     ],
     key
   })
-  console.log('actionScript:', actionScript)
 
   const tx = await ninja.getTransactionWithOutputs({
-    inputs: {
-      [preaction.txid]: {
-        ...preaction,
-        outputsToRedeem: [{
-          index: 0,
-          unlockingScript: await pushdrop.redeem({
-            prevTxId: preaction.txid,
-            outputIndex: 0,
-            outputAmount: preactionAmount,
-            key,
-            lockingScript: preactionScript.toHex()
-          })
-        }]
-      }
-    },
     outputs: [{
       satoshis: 500,
       script: actionScript
     }],
-    note: 'UHRP Bridge Availability Advertisement',
+    labels: [
+      'nanostore'
+    ],
+    note: 'UHRP Confederacy Availability Advertisement',
     autoProcess: true
   })
   console.log('tx:', tx)
 
   try {
-    const bridgeportResolvers =
-        NODE_ENV === 'production'
-          ? undefined
-          : NODE_ENV === 'staging'
-            ? ['https://staging-bridgeport.babbage.systems']
-          : ['http://localhost:3103']
-    console.log(bridgeportResolvers)
-    await bridgecast({
-      bridges: ['1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7'], // UHRP
-      bridgeportResolvers,
-      tx: {
+  // Submit the transaction to a Confederacy UHRP topic
+    const response = await new Authrite({ clientPrivateKey: SERVER_PRIVATE_KEY }).request(`${confederacyHost}/submit`, {
+      method: 'POST',
+      body: {
         rawTx: tx.rawTx,
+        inputs: tx.inputs,
         mapiResponses: tx.mapiResponses,
-        inputs: tx.inputs
+        topics: ['UHRP']
       }
     })
+    const submitResult = JSON.parse(Buffer.from(response.body).toString('utf8'))
+
+    // Check for any errors returned and create error to notify bugsnag.
+    if (submitResult.status && submitResult.status === 'error') {
+      const e = new Error(submitResult.description)
+      e.code = submitResult.code || 'ERR_UNKNOWN'
+      throw e
+    }
   } catch (e) {
-    console.error('Error sending UHRP tx to Bridgecast, ignoring...', e)
+    console.error('Error sending UHRP tx to Confederacy host, ignoring...', e)
     if (global.Bugsnag) global.Bugsnag.notify(e)
   }
   return {
