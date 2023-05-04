@@ -1,4 +1,4 @@
-const bsv = require('bsv')
+const bsv = require('babbage-bsv')
 const Ninja = require('utxoninja')
 const bridgecast = require('bridgecast')
 const pushdrop = require('pushdrop')

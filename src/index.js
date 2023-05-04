@@ -5,7 +5,7 @@ const prettyjson = require('prettyjson')
 const sendSeekable = require('send-seekable')
 const { preAuthrite, postAuthrite } = require('./routes')
 const authrite = require('authrite-express')
-const bsv = require('bsv')
+const bsv = require('babbage-bsv')
 
 const {
   UHRP_HOST_PRIVATE_KEY,
@@ -14,11 +14,6 @@ const {
   SERVER_PRIVATE_KEY,
   HOSTING_DOMAIN
 } = process.env
-if (NODE_ENV !== 'development') {
-  require('@google-cloud/debug-agent').start({
-    serviceContext: { enableCanary: false }
-  })
-}
 
 const HTTP_PORT = PORT || process.env.HTTP_PORT || 8080
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
