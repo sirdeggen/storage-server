@@ -10,12 +10,11 @@ const bsv = require('babbage-bsv')
 const {
   UHRP_HOST_PRIVATE_KEY,
   NODE_ENV,
-  PORT,
+  HTTP_PORT = 3104,
   SERVER_PRIVATE_KEY,
   HOSTING_DOMAIN
 } = process.env
 
-const HTTP_PORT = PORT || process.env.HTTP_PORT || 3104
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
 app.use(bodyparser.json())
