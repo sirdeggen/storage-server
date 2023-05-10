@@ -15,7 +15,7 @@ const {
   HOSTING_DOMAIN
 } = process.env
 
-const HTTP_PORT = PORT || process.env.HTTP_PORT || 8080
+const HTTP_PORT = PORT || process.env.HTTP_PORT || 3104
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
 app.use(bodyparser.json())

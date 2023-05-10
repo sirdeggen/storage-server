@@ -19,7 +19,6 @@ services:
       - "9229:9229"
     networks:
       - babnet
-    command: node --inspect=0.0.0.0 ./src/index.js
     environment:
       ROUTING_PREFIX: ''
       MIGRATE_KEY: 'my-great-key'
