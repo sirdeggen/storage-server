@@ -22,7 +22,7 @@
     "pushdrop": "^0.1.17",
     "send-seekable": "^1.0.4",
     "uhrp-url": "^0.1.5",
-    "utxoninja": "^0.2.51"
+    "utxoninja": "^0.2.52"
   },
   "scripts": {
     "start": "node src/index.js",
