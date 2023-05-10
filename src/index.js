@@ -10,7 +10,8 @@ const bsv = require('babbage-bsv')
 const {
   UHRP_HOST_PRIVATE_KEY,
   NODE_ENV,
-  HTTP_PORT = 3104,
+  HTTP_PORT,
+  PORT,
   SERVER_PRIVATE_KEY,
   HOSTING_DOMAIN
 } = process.env
@@ -120,7 +121,7 @@ app.use((req, res) => {
   })
 })
 
-app.listen(HTTP_PORT, () => {
+app.listen(HTTP_PORT || PORT || 8080, () => {
   console.log('Nanostore listening on port', HTTP_PORT)
   const addr = bsv
     .PrivateKey
