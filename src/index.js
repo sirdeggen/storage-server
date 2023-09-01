@@ -123,7 +123,7 @@ app.use((req, res) => {
   })
 })
 
-app.listen(HTTP_PORT || 8080, () => {
+app.listen(HTTP_PORT || 8081, () => {
   console.log('Nanostore listening on port', HTTP_PORT)
 
   if (NODE_ENV !== 'development') {
