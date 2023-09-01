@@ -16,6 +16,8 @@ const {
   HOSTING_DOMAIN
 } = process.env
 
+const spawn = require('child_process').spawn
+
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
 app.use(bodyparser.json())
@@ -121,8 +123,13 @@ app.use((req, res) => {
   })
 })
 
-app.listen(HTTP_PORT || PORT || 8080, () => {
+app.listen(HTTP_PORT || 8080, () => {
   console.log('Nanostore listening on port', HTTP_PORT)
+
+  if (NODE_ENV !== 'development') {
+    spawn('nginx', [], { stdio: [process.stdin, process.stdout, process.stderr] })
+  }
+
   const addr = bsv
     .PrivateKey
     .fromString(UHRP_HOST_PRIVATE_KEY)
