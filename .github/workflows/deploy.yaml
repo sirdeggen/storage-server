@@ -44,6 +44,7 @@ jobs:
           MIN_HOSTING_MINUTES: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIN_HOSTING_MINUTES || secrets.STAGING_MIN_HOSTING_MINUTES }}
           ADMIN_TOKEN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_ADMIN_TOKEN || secrets.STAGING_ADMIN_TOKEN }}
           DOJO_URL: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_DOJO_URL || secrets.STAGING_DOJO_URL }}
+          HTTP_PORT: ${{      env.CURRENT_BRANCH =='production' && secrets.HTTP_PORT || secrets.HTTP_PORT }}
       - uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.gcp_deploy_creds }}

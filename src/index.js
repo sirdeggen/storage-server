@@ -10,8 +10,7 @@ const bsv = require('babbage-bsv')
 const {
   UHRP_HOST_PRIVATE_KEY,
   NODE_ENV,
-  HTTP_PORT,
-  PORT,
+  HTTP_PORT = 8081,
   SERVER_PRIVATE_KEY,
   HOSTING_DOMAIN
 } = process.env
@@ -123,7 +122,7 @@ app.use((req, res) => {
   })
 })
 
-app.listen(HTTP_PORT || 8081, () => {
+app.listen(HTTP_PORT, () => {
   console.log('Nanostore listening on port', HTTP_PORT)
 
   if (NODE_ENV !== 'development') {

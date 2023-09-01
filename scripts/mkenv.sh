@@ -31,7 +31,8 @@ perl -E'
     GCP_STORAGE_CREDS \
     GCP_PROJECT_ID \
     GCP_BUCKET_NAME \
-    DOJO_URL >> $1
+    DOJO_URL \
+    HTTP_PORT >> $1
 
 echo "Built! Contents of $1:"
 cat $1
