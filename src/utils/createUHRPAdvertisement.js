@@ -1,5 +1,5 @@
 const bsv = require('babbage-bsv')
-const Ninja = require('utxoninja')
+const { Ninja } = require('ninja-base')
 const { Authrite } = require('authrite-js')
 const pushdrop = require('pushdrop')
 const { getHashFromURL } = require('uhrp-url')
