@@ -10,7 +10,7 @@
     "@bugsnag/js": "^7.14.1",
     "@bugsnag/plugin-express": "^7.14.0",
     "@google-cloud/storage": "^5.16.1",
-    "authrite-express": "^0.3.0",
+    "authrite-express": "^0.3.1",
     "axios": "^0.21.1",
     "babbage-bsv": "^0.1.1",
     "body-parser": "^1.19.0",
