@@ -30,7 +30,9 @@
     "build": "node scripts/build.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "standard --fix ."
+    "lint": "standard --fix .",
+    "tonpm": "npm run tonone && npm i ninja-base --silent",
+    "tonone": "npm remove ninja-base --silent"
   },
   "publishConfig": {
     "registry": "https://npm-registry.babbage.systems/"
