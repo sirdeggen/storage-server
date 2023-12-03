@@ -55,6 +55,7 @@ app.use(express.static('public'))
 
 // Cycle through pre-authrite routes
 preAuthrite.filter(x => x.unsecured).forEach((route) => {
+  console.log(`adding route ${route.path} pre-authrite`)
   // If we need middleware for a route, attach it
   if (route.middleware) {
     app[route.type](
@@ -81,6 +82,7 @@ app.use((req, res, next) => {
 
 // Secured pre-Authrite routes are added after the HTTPS redirect
 preAuthrite.filter(x => !x.unsecured).forEach((route) => {
+  console.log(`adding route ${route.path} https required`)
   // If we need middleware for a route, attach it
   if (route.middleware) {
     app[route.type](
@@ -101,6 +103,7 @@ app.use(authrite.middleware({
 
 // Secured, post-Authrite routes are added
 postAuthrite.filter(x => !x.unsecured).forEach((route) => {
+  console.log(`adding route ${route.path} https and authrite required`)
   // If we need middleware for a route, attach it
   if (route.middleware) {
     app[route.type](
