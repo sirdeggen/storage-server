@@ -1,17 +1,11 @@
 const { Ninja } = require('ninja-base')
 const {
   SERVER_PRIVATE_KEY,
-  NODE_ENV
 } = process.env
-const knex =
-  NODE_ENV === 'production' || NODE_ENV === 'staging'
-    ? require('knex')(require('../../knexfile.js').production)
-    : require('knex')(require('../../knexfile.js').development)
 
 module.exports = {
   type: 'get',
   path: '/getChain',
-  knex,
   summary: 'Use this route to confirm the chain this service is configured to run on.',
   parameters: {
   },
@@ -23,6 +17,7 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
+      console.log('processing getChain...')
 
       const ninja = new Ninja({
         privateKey: SERVER_PRIVATE_KEY,
