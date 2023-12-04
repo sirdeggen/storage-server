@@ -31,8 +31,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "standard --fix .",
-    "tonpm": "npm run tonone && npm i ninja-base --silent",
-    "tonone": "npm remove ninja-base --silent"
+    "tonpm": "npm run tonone && npm i ninja-base authrite-express babbage-bsv pushdrop --silent",
+    "tonone": "npm remove ninja-base authrite-express babbage-bsv pushdrop --silent"
   },
   "publishConfig": {
     "registry": "https://npm-registry.babbage.systems/"
