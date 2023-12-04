@@ -11,6 +11,9 @@ spec:
       timeoutSeconds: 3540
       containers:
       - image: $IMAGE
+        ports:
+        - name: h2c
+          containerPort: 8080
         env:" > $1
 
 echo "Appending environment variables to $1"
