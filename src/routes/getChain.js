@@ -1,6 +1,7 @@
 const { Ninja } = require('ninja-base')
 const {
   SERVER_PRIVATE_KEY,
+  DOJO_URL
 } = process.env
 
 module.exports = {
@@ -37,7 +38,7 @@ module.exports = {
       console.error(e)
       return res.status(500).json({
         status: 'error',
-        code: 'ERR_INTERNAL_PROCESSING_INVOICE',
+        code: 'ERR_INTERNAL_PROCESSING_GETCHAIN',
         description: 'An internal error has occurred while processing getChain.'
       })
     }
