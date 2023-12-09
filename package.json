@@ -10,7 +10,7 @@
     "@bugsnag/js": "^7.14.1",
     "@bugsnag/plugin-express": "^7.14.0",
     "@google-cloud/storage": "^5.16.1",
-    "authrite-express": "^0.3.4",
+    "authrite-express": "^0.3.8",
     "axios": "^0.21.1",
     "babbage-bsv": "^0.2.2",
     "body-parser": "^1.19.0",
@@ -18,11 +18,11 @@
     "express": "^5.0.0-beta.1",
     "knex": "^2.0.0",
     "mysql": "^2.18.1",
-    "ninja-base": "^0.2.91",
+    "ninja-base": "^0.2.100",
     "prettyjson": "^1.2.1",
-    "pushdrop": "^0.1.25",
+    "pushdrop": "^0.1.29",
     "send-seekable": "^1.0.4",
-    "uhrp-url": "^0.1.5"
+    "uhrp-url": "^0.1.9"
   },
   "scripts": {
     "start": "node src/index.js",
