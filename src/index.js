@@ -19,7 +19,7 @@ const spawn = require('child_process').spawn
 
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
-app.use(bodyparser.json())
+app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
 app.use(sendSeekable)
 
 // This allows the API to be used when CORS is enforced
