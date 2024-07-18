@@ -1,6 +1,6 @@
 {
   "name": "@cwi/nanostore",
-  "version": "0.2.33",
+  "version": "0.2.34",
   "private": true,
   "main": "src/index.js",
   "repository": "https://github.com/p2ppsr/nanostore",
