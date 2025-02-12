@@ -15,3 +15,4 @@ functions.env.yaml
 prod.functions.env.yaml
 staging.functions.env.yaml
 .eslintrc.json
+dist

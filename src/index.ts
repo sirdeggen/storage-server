@@ -5,7 +5,7 @@ import prettyjson from 'prettyjson'
 import sendSeekable from 'send-seekable'
 import { spawn } from 'child_process'
 import authrite from 'authrite-express'
-import bsv from 'babbage-bsv'
+import * as bsv from 'babbage-bsv'
 import routes from './routes'
 
 const {

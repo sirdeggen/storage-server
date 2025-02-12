@@ -1,4 +1,4 @@
-import { bsv } from 'babbage-bsv'
+import * as bsv from 'babbage-bsv'
 import { Ninja } from 'ninja-base'
 import { Authrite } from 'authrite-js'
 import pushdrop from 'pushdrop'
