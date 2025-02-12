@@ -33,7 +33,7 @@ perl -E'
     SERVER_PRIVATE_KEY \
     GCP_STORAGE_CREDS \
     GCP_PROJECT_ID \
-    GCP_BUCKET_NAME \
+    GCP__NAME \
     DOJO_URL \
     HTTP_PORT >> $1
 

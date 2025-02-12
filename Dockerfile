@@ -8,7 +8,7 @@ RUN echo "http://dl-4.alpinelinux.org/alpine/v3.3/main" >> /etc/apk/repositories
 
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 3104
+EXPOSE 8080
 WORKDIR /app
 COPY package.json .
 RUN npm i

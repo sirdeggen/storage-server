@@ -15,7 +15,7 @@ services:
     #     - ".:/app"
     #   - "./src:/app/src"
     ports:
-      - "3104:3104"
+      - "8080:8080"
       - "9229:9229"
     networks:
       - babnet
@@ -23,10 +23,10 @@ services:
       ROUTING_PREFIX: ''
       MIGRATE_KEY: 'my-great-key'
       NODE_ENV: 'development'
-      HOSTING_DOMAIN: 'http://localhost:3104'
+      HOSTING_DOMAIN: 'http://localhost:8080'
       DOJO_URL: 'https://staging-dojo.babbage.systems'
       ADMIN_TOKEN: 'admin-token'
-      HTTP_PORT: 3104
+      HTTP_PORT: 8080
       PRICE_PER_GB_MO: 0.03
       UHRP_HOST_PRIVATE_KEY: '5KKGHf1dZpJ1L4aQTGCrVL4q3y5iwbcf9YcWS3oXynrWjaxS2LD'
       SERVER_PRIVATE_KEY: 'ab93af021feaab26a9adff360fc8a32da645539985a0adfcc2cecbfe76bb4e41'
@@ -35,7 +35,7 @@ services:
       GCP_BUCKET_NAME: 'staging-hashbrown.babbage.systems'
       GCP_PROJECT_ID: 'babbage-hashbrown'
       KNEX_CLIENT: 'mysql'
-      KNEX_DB_CONNECTION: '{"port":3114,"host":"nanostore-mysql","user":"root","password":"test","database":"hashbrown"}'
+      KNEX_DB_CONNECTION: '{"port":3306,"host":"nanostore-mysql","user":"root","password":"test","database":"hashbrown"}'
       GOOGLE_APPLICATION_CREDENTIALS: '/app/storage-creds.json'
 
   nanostore-mysql:
@@ -47,11 +47,11 @@ services:
     volumes:
       - './data/mysql-data:/var/lib/mysql'
     environment:
-      MYSQL_TCP_PORT: 3114
+      MYSQL_TCP_PORT: 3306
       MYSQL_ROOT_PASSWORD: "test"
       MYSQL_DATABASE: "hashbrown"
     ports:
-      - "3114:3114"
+      - "3306:3306"
     healthcheck:
       test: ["CMD-SHELL", 'mysqladmin ping']
       interval: 10s
