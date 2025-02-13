@@ -2,7 +2,12 @@
   "name": "@cwi/nanostore",
   "version": "0.2.37",
   "private": true,
-  "main": "src/index.js",
+  "main": "./out/src/index.js",
+  "types": "./out/src/index.d.ts",
+  "files": [
+    "out/src",
+    "src"
+  ],
   "repository": "https://github.com/p2ppsr/nanostore",
   "author": "Peer-to-peer Privacy Systems Research, LLC",
   "license": "PROPRIETARY",

@@ -1,13 +1,20 @@
+import advertise from './advertise';
+import quote from './quote';
+import migrate from './migrate';
+import getChain from './getChain';
+import pay from './pay';
+import invoice from './invoice';
+
 const routes = {
   preAuthrite: [
-    { ...require('./advertise'), type: 'post' as 'post' },
-    { ...require('./quote'), type: 'post' as 'post' },
-    { ...require('./migrate'), type: 'post' as 'post' },
-    { ...require('./getChain'), type: 'get' as 'get' }
+    { ...advertise, type: 'post' as 'post' },
+    { ...quote, type: 'post' as 'post' },
+    { ...migrate, type: 'post' as 'post' },
+    { ...getChain, type: 'get' as 'get' }
   ],
   postAuthrite: [
-    { ...require('./pay'), type: 'post' as 'post' },
-    { ...require('./invoice'), type: 'post' as 'post' }
+    { ...pay, type: 'post' as 'post' },
+    { ...invoice, type: 'post' as 'post' }
   ]
 };
 

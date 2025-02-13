@@ -16,3 +16,4 @@ prod.functions.env.yaml
 staging.functions.env.yaml
 .eslintrc.json
 dist
+out
