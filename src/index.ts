@@ -1,5 +1,5 @@
-import  'dotenv/config'
-import express, {Request, Response, NextFunction} from 'express'
+import 'dotenv/config'
+import express, { Request, Response, NextFunction } from 'express'
 import bodyparser from 'body-parser'
 import prettyjson from 'prettyjson'
 import sendSeekable from 'send-seekable'
@@ -54,26 +54,26 @@ app.use(express.static('public'))
 interface Route<T = Request> {
   path: string,
   type: 'get' | 'post' | 'put' | 'delete' | 'patch'
-  func: (req: Request, res:Response, next : NextFunction) => void | Promise<void>
+  func: (req: Request, res: Response, next: NextFunction) => void | Promise<void>
   unsecured?: boolean
   middleware?: (req: Request, res: Response, next: NextFunction) => void
 }
 
-const preAuthriteRoutes: Route<any>[] = routes.preAuthrite as Route<any>[];
-const postAuthriteRoutes: Route<any>[] = routes.postAuthrite as Route<any>[];
+const preAuthriteRoutes = Object.values(routes.preAuthrite);
+const postAuthriteRoutes = Object.values(routes.postAuthrite);
 
 // Cycle through pre-authrite routes
-preAuthriteRoutes.filter(route => route.unsecured).forEach((route: Route) => {
+preAuthriteRoutes.filter(route => (route as any).unsecured).forEach((route) => {
   console.log(`adding route ${route.path} pre-authrite`)
   // If we need middleware for a route, attach it
-  if (route.middleware) {
+  if ((route as any).middleware) {
     app[route.type](
       `${ROUTING_PREFIX}${route.path}`,
-      route.middleware,
-      route.func
+      (route as any).middleware,
+      (route as any).func
     )
   } else {
-    app[route.type](`${ROUTING_PREFIX}${route.path}`, route.func)
+    app[route.type](`${ROUTING_PREFIX}${route.path}`, (route as any).func)
   }
 })
 
@@ -90,38 +90,38 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Secured pre-Authrite routes are added after the HTTPS redirect
-preAuthriteRoutes.filter(route => !route.unsecured).forEach((route: Route) => {
+preAuthriteRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
   console.log(`adding route ${route.path} https required`)
   // If we need middleware for a route, attach it
-  if (route.middleware) {
+  if ((route as any).middleware) {
     app[route.type](
       `${ROUTING_PREFIX}${route.path}`,
-      route.middleware,
-      route.func
+      (route as any).middleware,
+      (route as any).func
     )
   } else {
-    app[route.type](`${ROUTING_PREFIX}${route.path}`, route.func)
+    app[route.type](`${ROUTING_PREFIX}${route.path}`, (route as any).func)
   }
 })
 
 // Authrite is enforced from here forward
 app.use(authrite.middleware({
   serverPrivateKey: SERVER_PRIVATE_KEY,
-  baseUrl: HOSTING_DOMAIN
+  baseUrl: HOSTING_DOMAIN || 'unknown'
 }));
 
 // Secured, post-Authrite routes are added
-postAuthriteRoutes.forEach((route: Route) => {
+postAuthriteRoutes.forEach((route) => {
   console.log(`adding route ${route.path} https and authrite required`)
   // If we need middleware for a route, attach it
-  if (route.middleware) {
+  if ((route as any).middleware) {
     app[route.type](
       `${ROUTING_PREFIX}${route.path}`,
-      route.middleware,
-      route.func
+      (route as any).middleware,
+      (route as any).func
     )
   } else {
-    app[route.type](`${ROUTING_PREFIX}${route.path}`, route.func)
+    app[route.type](`${ROUTING_PREFIX}${route.path}`, (route as any).func)
   }
 })
 
