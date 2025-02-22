@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { Request, Response } from 'express' // ANY PLACE THAT USES A WALLET IS PROBABLY OBSOLETE
 import knex, { Knex } from 'knex'
 import knexConfig from '../../knexfile'
 import { Ninja } from 'ninja-base'

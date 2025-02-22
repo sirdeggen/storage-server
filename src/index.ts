@@ -4,17 +4,16 @@ import bodyparser from 'body-parser'
 import prettyjson from 'prettyjson'
 import sendSeekable from 'send-seekable'
 import { spawn } from 'child_process'
-import authrite from 'authrite-express'
-import * as bsv from 'babbage-bsv'
+import { WalletClient, PrivateKey } from '@bsv/sdk'
+import { createAuthMiddleware } from '@bsv/auth-express-middleware'
+
 import routes from './routes'
 
-const {
-  UHRP_HOST_PRIVATE_KEY,
-  NODE_ENV,
-  HTTP_PORT = 8080,
-  SERVER_PRIVATE_KEY,
-  HOSTING_DOMAIN
-} = process.env
+  const UHRP_HOST_PRIVATE_KEY = process.env.UHRP_HOST_PRIVATE_KEY as string
+  const NODE_ENV = process.env.NODE_ENV
+  const HTTP_PORT = 8080
+  const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
+  const HOSTING_DOMAIN = process.env.HOSTING_DOMAIN as string
 
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
@@ -105,10 +104,12 @@ preAuthriteRoutes.filter(route => !(route as any).unsecured).forEach((route) => 
 })
 
 // Authrite is enforced from here forward
-app.use(authrite.middleware({
-  serverPrivateKey: SERVER_PRIVATE_KEY,
-  baseUrl: HOSTING_DOMAIN || 'unknown'
-}));
+const wallet = new WalletClient()
+const authMiddleware = createAuthMiddleware({
+  wallet,
+  allowUnauthenticated: false
+})
+app.use(authMiddleware);
 
 // Secured, post-Authrite routes are added
 postAuthriteRoutes.forEach((route) => {
@@ -141,8 +142,7 @@ app.listen(HTTP_PORT, () => {
     spawn('nginx', [], { stdio: [process.stdin, process.stdout, process.stderr] })
   }
 
-  const addr = bsv
-    .PrivateKey
+  const addr = PrivateKey
     .fromString(UHRP_HOST_PRIVATE_KEY)
     .toAddress()
     .toString()
