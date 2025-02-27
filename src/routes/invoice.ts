@@ -1,19 +1,16 @@
 import crypto from 'crypto'
-import { bsv } from 'babbage-bsv'
 import getPriceForFile from '../utils/getPriceForFile'
 import { Request, Response } from 'express'
 import knex, { Knex } from 'knex'
-import knexConfig from '../../knexfile.js'
-import authrite from 'authrite-js'
+import knexConfig from '../../knexfile'
+import { PrivateKey, Utils } from '@bsv/sdk'
 
+const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
+const MIN_HOSTING_MINUTES = process.env.MIN_HOSTING_MINUTES
+const HOSTING_DOMAIN = process.env.HOSTING_DOMAIN
+const ROUTING_PREFIX = process.env.ROUTING_PREFIX
+const NODE_ENV = process.env.NODE_ENV
 
-const {
-  SERVER_PRIVATE_KEY,
-  MIN_HOSTING_MINUTES,
-  HOSTING_DOMAIN,
-  ROUTING_PREFIX,
-  NODE_ENV
-} = process.env
 
 const environment = (NODE_ENV as 'development' | 'staging' | 'production') || 'development';
 const db: Knex = knex(knexConfig[environment]);
@@ -110,7 +107,7 @@ const invoiceHandler = async (req: InvoiceRequest, res: Response<InvoiceResponse
     const amount = await getPriceForFile({ fileSize, retentionPeriod })
 
     // Insert a new file record and get the id
-    const objectIdentifier = bsv.deps.bs58.encode(crypto.randomBytes(16))
+    const objectIdentifier = Utils.toBase58(Array.from(crypto.randomBytes(16)))
     // console.log('objectIdentifier:', objectIdentifier)
     await db('file').insert({
       fileSize,
@@ -141,7 +138,7 @@ const invoiceHandler = async (req: InvoiceRequest, res: Response<InvoiceResponse
     return res.status(200).json({
       status: 'success',
       message: 'Use /pay to submit the payment.',
-      identityKey: bsv.PrivateKey.fromHex(SERVER_PRIVATE_KEY).publicKey.toString(),
+      identityKey: PrivateKey.fromHex(SERVER_PRIVATE_KEY).toPublicKey.toString(), //POSSIBLE TODO? ERROR MAYBE...?
       amount,
       ORDER_ID,
       publicURL: `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}` // ${NODE_ENV === 'development' ? 'http' : 'https'}://

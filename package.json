@@ -13,24 +13,19 @@
   "license": "PROPRIETARY",
   "dependencies": {
     "@bsv/auth-express-middleware": "^1.0.2",
+    "@bsv/payment-express-middleware": "^1.0.1",
     "@bsv/sdk": "^1.3.22",
+    "@bsv/wallet-toolbox-client": "^1.1.30",
     "@bugsnag/js": "^7.14.1",
     "@bugsnag/plugin-express": "^7.14.0",
     "@google-cloud/storage": "^5.16.1",
-    "authrite-express": "^0.4.36",
-    "authrite-js": "^0.4.36",
     "axios": "^0.21.1",
-    "babbage-bsv": "^0.2.5",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "express": "^5.0.0-beta.1",
     "knex": "^3.1.0",
     "mysql": "^2.18.1",
-    "ninja-base": "^0.3.52",
-    "prettyjson": "^1.2.1",
-    "pushdrop": "^0.1.64",
-    "send-seekable": "^1.0.4",
-    "uhrp-url": "^0.1.10"
+    "prettyjson": "^1.2.5"
   },
   "scripts": {
     "start": "ts-node src/index.ts",
