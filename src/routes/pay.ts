@@ -39,6 +39,7 @@ interface PayResponse {
 
 const payHandler = async (req: PayRequest, res: Response<PayResponse>) => {
     try {
+        // verifying if transaction exsists and if it has already been paid
         const transaction = await db('transaction')
             .where({
                 identityKey: req.authrite.identityKey,
@@ -75,6 +76,7 @@ const payHandler = async (req: PayRequest, res: Response<PayResponse>) => {
             })
         }
 
+        // getting file's upload URL
         const uploadURL = getUploadURL({
             size: file.fileSize,
             objectIdentifier: file.objectIdentifier

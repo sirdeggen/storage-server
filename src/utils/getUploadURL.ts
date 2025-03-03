@@ -17,6 +17,12 @@ const devUploadFunction = (): UploadResponse => {
   return { uploadURL: 'http://localhost:8080/upload'}
 }
 
+/**
+ * Uploads the file to the UHRP Host
+ *
+ * @param {UploadParams} params - Parameters for file upload.
+ * @returns {Promise<number>} - The price in satoshis.
+ */
 const prodUploadFunction = async ({ size, objectIdentifier }: UploadParams): Promise<UploadResponse> => {
   if (!GCP_BUCKET_NAME || !GCP_PROJECT_ID) {
     throw new Error('Missing required Google Cloud Storage eviornment variables.')

@@ -36,7 +36,6 @@ exports.notifier = (file, context) => {
 
   return new Promise((resolve, reject) => {
     try {
-      debugger
       const storageFile = storage.bucket(file.bucket).file(file.name)
       const digest = crypto.createHash('sha256')
       const fileStream = storageFile.createReadStream()
