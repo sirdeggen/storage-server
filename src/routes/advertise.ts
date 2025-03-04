@@ -1,8 +1,6 @@
 import { Storage } from '@google-cloud/storage';
-import knexConfig from '../../knexfile'
 import createUHRPAdvertisement from '../utils/createUHRPAdvertisement';
 import { Request, Response } from 'express';
-import knex, { Knex } from 'knex';
 
 const {
   ADMIN_TOKEN,
@@ -14,15 +12,13 @@ const {
 
 const storage = new Storage()
 
-const environment = (NODE_ENV as 'development' | 'staging' | 'production') || 'development'
-const db: Knex = knex(knexConfig[environment])
-
 interface AdvertiseRequest extends Request {
   body: {
     adminToken: string
     fileHash: string
     objectIdentifier: string
     fileSize: number
+    retentionPeriod: number
   }
 }
 
@@ -34,72 +30,31 @@ interface AdvertiseResponse {
 
 const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseResponse>) => {
   if (typeof ADMIN_TOKEN === 'string' && ADMIN_TOKEN.length > 10 && req.body.adminToken === ADMIN_TOKEN) {
-    try { 
-      // Retrieve file ID
-      const file = await db('file')
-        .where({ objectIdentifier: req.body.objectIdentifier })
-        .select('fileId')
-        .first()
+    try {
+      const expiryTime = Date.now() + req.body.retentionPeriod * 60 * 1000
 
-      if (!file) {
-        return res.status(404).json({
-          status: 'error',
-          code: 'ERR_FILE_NOT_FOUND',
-          description: 'File not found in database.'
-        });
-      }
-      
-      const fileId = file.fileId
+      const storageFile = storage
+        .bucket(GCP_BUCKET_NAME as string)
+        .file(`cdn/${req.body.objectIdentifier}`)
 
-      const transaction = await db('transaction')
-        .where({ advertisementTXID: null, fileId })
-        .select('numberOfMinutesPurchased')
-        .first()
+      const { txid: adTXID } = await createUHRPAdvertisement({
+        hash: req.body.fileHash,
+        url: `${HOSTING_DOMAIN}${ROUTING_PREFIX}/cdn/${req.body.objectIdentifier}`,
+        expiryTime,
+        contentLength: req.body.fileSize,
+        confederacyHost:
+          NODE_ENV === 'development'
+            ? 'http://localhost:3002'
+            : NODE_ENV === 'staging'
+              ? 'https://staging-confederacy.babbage.systems'
+              : ''
+      })
 
-        if (!transaction) {
-          return res.status(404).json({
-            status: 'error',
-            code: 'ERR_TRANSACTION_NOT_FOUND',
-            description: 'Transaction record not found.'
-          })
-        }
-        
-        const expiryTime = Date.now() + transaction.numberOfMinutesPurchased * 60 * 1000
+      await storageFile.setMetadata({
+        customTime: new Date(expiryTime + 300 * 1000).toISOString()
+      })
 
-        const storageFile = storage
-          .bucket(GCP_BUCKET_NAME as string)
-          .file(`cdn/${req.body.objectIdentifier}`)
-
-        const { txid: adTXID } = await createUHRPAdvertisement({
-          hash: req.body.fileHash,
-          url: `${HOSTING_DOMAIN}${ROUTING_PREFIX}/cdn/${req.body.objectIdentifier}`,
-          expiryTime,
-          contentLength: req.body.fileSize,
-          confederacyHost:
-            NODE_ENV === 'development'
-              ? 'http://localhost:3002'
-              : NODE_ENV === 'staging'
-                ? 'https://staging-confederacy.babbage.systems'
-                : ''
-        })
-
-        await storageFile.setMetadata({
-          customTime: new Date(expiryTime + 300 * 1000).toISOString()
-        })
-
-        await db('file')
-          .where({ objectIdentifier: req.body.objectIdentifier })
-          .update({ 
-            isUploaded: true,
-            isAvailable: true,
-            fileHash: req.body.fileHash
-          })
-
-        await db('transaction')
-          .where({ advertisementTXID: null, fileId })
-          .update({ advertisementTXID: adTXID })
-
-        res.status(200).json({ status: 'success' })        
+      res.status(200).json({ status: 'success' })
     } catch (error) {
       console.error('Error processing advertisement:', error)
       res.status(500).json({
@@ -120,7 +75,6 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
 export default {
   type: 'post',
   path: '/advertise',
-  knex: db,
   summary: 'Administrative endpoint to trigger UHRP advertisements when new files are uploaded.',
   parameters: {
     adminToken: 'Server admin token',

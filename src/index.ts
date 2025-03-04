@@ -6,9 +6,7 @@ import { spawn } from 'child_process'
 import { PrivateKey } from '@bsv/sdk'
 import { createAuthMiddleware } from '@bsv/auth-express-middleware'
 import { createPaymentMiddleware } from '@bsv/payment-express-middleware'
-import knex, { Knex } from 'knex'
 import { wallet } from './utils/walletSingleton'
-import knexConfig from '../knexfile'
 import routes from './routes'
 
 
@@ -19,7 +17,6 @@ const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
 const HOSTING_DOMAIN = process.env.HOSTING_DOMAIN as string
 
 const enviornment = (NODE_ENV as 'development' | 'staging' | 'production') || 'development'
-const db: Knex = knex(knexConfig[enviornment])
 
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
@@ -118,22 +115,16 @@ const authMiddleware = createAuthMiddleware({
 const paymentMiddleware = createPaymentMiddleware({
   wallet,
   calculateRequestPrice: async (req) => {
+
+    // TODO check req.path == /upload
+    // TODO add a check that the req.amount = getPriceForFile(x, y, z)
+    
     const orderID = (req as any).body?.orderID || (req as any).query?.orderID
     if (!orderID) {
       return 0
     }
 
-    const transaction = await db('transaction')
-      .where({ orderID })
-      .first()    
-    if (!transaction) {
-      return 0
-    }
-    if (transaction.paid) {
-      return 0
-    }
-
-    return transaction.amount || 0
+    return 0 // REEEEEEE
   }
 })
 

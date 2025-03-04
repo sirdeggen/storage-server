@@ -13,5 +13,4 @@ do
   echo "Waiting for database connection..."
   sleep 1
 done
-knex migrate:latest
 npm run dev

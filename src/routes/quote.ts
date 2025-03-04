@@ -1,13 +1,9 @@
 import { Request, Response } from 'express'
-import knex, { Knex } from 'knex'
-import knexConfig from '../../knexfile'
 import getPriceForFile from '../utils/getPriceForFile'
 
 const {
   MIN_HOSTING_MINUTES
 } = process.env
-
-const db: Knex = knex(knexConfig.production)
 
 interface QuoteRequest extends Request {
   body: {
@@ -95,7 +91,6 @@ const quoteHandler = async (req: QuoteRequest, res: Response<QuoteResponse>) => 
 export default {
   type: 'post',
   path: '/quote',
-  knex,
   summary: 'Use this route to get a quote for what it would cost to host a file for a given duration.',
   parameters: {
     fileSize: 'Specify the size of the file you would like to host in bytes',
