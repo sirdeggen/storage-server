@@ -8,7 +8,7 @@ const routes = {
     { ...quote, type: 'post' as 'post' },
   ],
   postAuthrite: [
-    { ...upload, type: 'upload' as 'upload' },
+    { ...upload, type: 'post' as 'post' },
   ]
 };
 

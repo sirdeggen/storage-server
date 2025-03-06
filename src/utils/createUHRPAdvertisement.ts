@@ -8,6 +8,7 @@ const
 
 export interface AdvertisementParams {
     hash: string | Buffer
+    objectIdentifier: string
     expiryTime: number
     url: string
     contentLength: number
@@ -21,6 +22,7 @@ export interface AdvertisementResponse {
 
 export default async function createUHRPAdvertisement({
     hash,
+    objectIdentifier,
     expiryTime,
     url,
     contentLength,
@@ -29,7 +31,7 @@ export default async function createUHRPAdvertisement({
     if (typeof hash === 'string') {
         hash = StorageUtils.getHashFromURL(hash)
     }
-    
+
     const expiryTimeSeconds = Math.floor(expiryTime / 1000)
     const key = PrivateKey.fromWif(UHRP_HOST_PRIVATE_KEY)
     const address = key.toAddress().toString()
@@ -53,17 +55,21 @@ export default async function createUHRPAdvertisement({
         'self'
     )
 
+    const uhrpURL = StorageUtils.getURLForHash(hash as Buffer<ArrayBufferLike>)
+
     const createResult = await wallet.createAction({
         outputs: [{
             lockingScript: lockingScript.toHex(),
             satoshis: 500,
-            outputDescription: 'UHRP Advertisement Output'
+            outputDescription: 'UHRP Advertisement Output',
+            tags: [`uhrp-url_${uhrpURL}`, `objectIdentifier_${objectIdentifier}`]
         }],
         description: 'UHRP Confederacy Availability Advertisement',
         options: {
             signAndProcess: false,
             noSend: true
         }
+        
     })
     if (!createResult.signableTransaction?.reference) {
         throw new Error('No signable transaction returned from createAction')

@@ -39,6 +39,7 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
 
       const { txid: adTXID } = await createUHRPAdvertisement({
         hash: req.body.fileHash,
+        objectIdentifier: req.body.objectIdentifier,
         url: `${HOSTING_DOMAIN}${ROUTING_PREFIX}/cdn/${req.body.objectIdentifier}`,
         expiryTime,
         contentLength: req.body.fileSize,

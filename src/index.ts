@@ -8,7 +8,7 @@ import { createAuthMiddleware } from '@bsv/auth-express-middleware'
 import { createPaymentMiddleware } from '@bsv/payment-express-middleware'
 import { wallet } from './utils/walletSingleton'
 import routes from './routes'
-
+import getPriceForFile from './utils/getPriceForFile'
 
 const UHRP_HOST_PRIVATE_KEY = process.env.UHRP_HOST_PRIVATE_KEY as string
 const NODE_ENV = process.env.NODE_ENV
@@ -116,15 +116,15 @@ const paymentMiddleware = createPaymentMiddleware({
   wallet,
   calculateRequestPrice: async (req) => {
 
-    // TODO check req.path == /upload
-    // TODO add a check that the req.amount = getPriceForFile(x, y, z)
-    
-    const orderID = (req as any).body?.orderID || (req as any).query?.orderID
-    if (!orderID) {
-      return 0
+    if (req.url === '/upload') {
+      const { fileSize, retentionPeriod } = (req.body as any) || {}
+      if (!fileSize || !retentionPeriod) {
+        return 0
+      }
+      const satoshis = await getPriceForFile({ fileSize: +fileSize, retentionPeriod: +retentionPeriod })
+      return satoshis
     }
-
-    return 0 // REEEEEEE
+    return 0
   }
 })
 

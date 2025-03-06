@@ -23,7 +23,6 @@
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "express": "^5.0.0-beta.1",
-    "mysql": "^2.18.1",
     "prettyjson": "^1.2.5"
   },
   "scripts": {
@@ -40,6 +39,7 @@
     "registry": "https://npm-registry.babbage.systems/"
   },
   "devDependencies": {
+    "@cwi/remembrance": "^0.1.1",
     "@types/body-parser": "^1.19.5",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
