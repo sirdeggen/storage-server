@@ -15,7 +15,7 @@ const storage = new Storage()
 interface AdvertiseRequest extends Request {
   body: {
     adminToken: string
-    fileHash: string
+    hash: number[]
     objectIdentifier: string
     fileSize: number
     retentionPeriod: number
@@ -38,7 +38,7 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
         .file(`cdn/${req.body.objectIdentifier}`)
 
       const { txid: adTXID } = await createUHRPAdvertisement({
-        hash: req.body.fileHash,
+        hash: req.body.hash,
         objectIdentifier: req.body.objectIdentifier,
         url: `${HOSTING_DOMAIN}${ROUTING_PREFIX}/cdn/${req.body.objectIdentifier}`,
         expiryTime,

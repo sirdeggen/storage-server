@@ -7,7 +7,7 @@ const
     STORAGE_URL = process.env.STORAGE_URL as string
 
 export interface AdvertisementParams {
-    hash: string | Buffer
+    hash: number[]
     objectIdentifier: string
     expiryTime: number
     url: string
@@ -39,7 +39,7 @@ export default async function createUHRPAdvertisement({
     const fields: number[][] = [
         Utils.toArray('1UHRPYnMHPuQ5Tgb3AF8JXqwKkmZVy5hG', 'utf8'),
         Utils.toArray(address, 'utf8'),
-        Array.isArray(hash) ? hash : Array.from(hash as Buffer),
+        hash,
         Utils.toArray('advertise', 'utf8'),
         Utils.toArray(url, 'utf8'),
         Utils.toArray(String(expiryTimeSeconds), 'utf8'),
@@ -55,7 +55,7 @@ export default async function createUHRPAdvertisement({
         'self'
     )
 
-    const uhrpURL = StorageUtils.getURLForHash(hash as Buffer<ArrayBufferLike>)
+    const uhrpURL = StorageUtils.getURLForHash(hash)
 
     const createResult = await wallet.createAction({
         outputs: [{
