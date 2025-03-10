@@ -1,5 +1,5 @@
 import { PushDrop, PrivateKey, Transaction, StorageUtils, Utils, WalletWireTransceiver, AtomicBEEF } from "@bsv/sdk"
-import { wallet } from "./walletSingleton"
+import { getWallet } from "./walletSingleton"
 
 const
     UHRP_HOST_PRIVATE_KEY = process.env.UHRP_HOST_PRIVATE_KEY as string,
@@ -46,6 +46,7 @@ export default async function createUHRPAdvertisement({
         Utils.toArray(String(contentLength), 'utf8')
     ]
 
+    const wallet = getWallet()
     const pushdrop = new PushDrop(wallet)
     
     const lockingScript = await pushdrop.lock(

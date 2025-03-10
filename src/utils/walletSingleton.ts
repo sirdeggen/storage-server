@@ -1,3 +1,10 @@
 import { WalletClient } from '@bsv/sdk'
 
-export const wallet = new WalletClient('json-api')
+let walletInstance: WalletClient | null = null
+
+export function getWallet(): WalletClient {
+    if (!walletInstance) {
+        walletInstance = new WalletClient('json-api')
+    }
+    return walletInstance
+}

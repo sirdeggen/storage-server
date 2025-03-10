@@ -6,7 +6,7 @@ import { spawn } from 'child_process'
 import { PrivateKey } from '@bsv/sdk'
 import { createAuthMiddleware } from '@bsv/auth-express-middleware'
 import { createPaymentMiddleware } from '@bsv/payment-express-middleware'
-import { wallet } from './utils/walletSingleton'
+import { getWallet } from './utils/walletSingleton'
 import routes from './routes'
 import getPriceForFile from './utils/getPriceForFile'
 
@@ -106,6 +106,8 @@ preAuthriteRoutes.filter(route => !(route as any).unsecured).forEach((route) => 
 })
 
 // Authrite is enforced from here forward
+
+const wallet = getWallet()
 
 const authMiddleware = createAuthMiddleware({
   wallet,
