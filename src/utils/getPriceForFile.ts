@@ -43,17 +43,15 @@ const getPriceForFile = async ({ retentionPeriod, fileSize }: PriceCalculationPa
     }
     exchangeRate = data.rate
   } catch (e) {
-    exchangeRate = 100
-    console.error('Exchange rate failed, using fallback rate of 100', e)
+    exchangeRate = 30
+    console.error('Exchange rate failed, using fallback rate of 30', e)
   }
 
   // Exchange rate is in BSV, convert to satoshis
   const exchangeRateInSatoshis = 1 / (exchangeRate / 100000000)
 
-  // Avoid dust outputs (which are smaller than 546 satoshis)
-  let satPrice = Math.max(546, Math.floor(usdPrice * exchangeRateInSatoshis));
-  // TODO: Find out from miners if they will accept anything smaller
-
+  // Account for server overhead in our prices, so there is a minimum of 10 satoshis
+  let satPrice = Math.max(10, Math.floor(usdPrice * exchangeRateInSatoshis));
   return satPrice
 }
 
