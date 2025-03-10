@@ -2,12 +2,9 @@
 // set up env vars before requiring
 process.env.UHRP_HOST_PRIVATE_KEY = '5KU2L5qbkL5MPnUK1cuC5fWamjz7aoKCAZAbKdqmChed8TTbWCZ'
 
-const remembrance = require('@cwi/remembrance')
 import createUHRPAdvertisement from "../createUHRPAdvertisement"
 import { getHashFromURL } from "@bsv/sdk"
 
-
-jest.mock('@cwi/remembrance')
 jest.mock('@bsv/sdk')
 let valid
 

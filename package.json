@@ -39,7 +39,6 @@
     "registry": "https://npm-registry.babbage.systems/"
   },
   "devDependencies": {
-    "@cwi/remembrance": "^0.1.1",
     "@types/body-parser": "^1.19.5",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
