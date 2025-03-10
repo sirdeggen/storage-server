@@ -1,12 +1,12 @@
 
-# @cwi/nanostore
+# UHRP Storage Server
 
-## Testing
+Reference UHRP storage host implementation, allowing network participants to upload and download files with on-chain validation.
 
-Adequate testing practices for use in a critical production application should be observed at all times for this API.
+## Work In Progress
 
-## Confidentiality
+More documentation, deployment guides, and other details coming soon!
 
-This is proprietary software developed and owned by Peer-to-peer Privacy Systems Research, LLC. 
-Except as provided for in your CWI Partner Agreement with us, you may not use this software and 
-must keep it confidential.
+## License
+
+The license for the code in this repository is the Open BSV License.

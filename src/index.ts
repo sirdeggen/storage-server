@@ -159,7 +159,7 @@ app.use((req, res) => {
 })
 
 app.listen(HTTP_PORT, () => {
-  console.log('Nanostore listening on port', HTTP_PORT)
+  console.log('UHRP Storage Server listening on port', HTTP_PORT)
 
   if (NODE_ENV !== 'development') {
     spawn('nginx', [], { stdio: [process.stdin, process.stdout, process.stderr] })

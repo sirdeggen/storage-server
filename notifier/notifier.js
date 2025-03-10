@@ -12,7 +12,7 @@ const {
 const storage = new Storage()
 
 /**
- * NanoStore Notifier to be triggered by Cloud Storage.
+ * UHRP Storage Notifier to be triggered by Cloud Storage.
  *
  * @param {object} file The Cloud Storage file metadata.
  * @param {object} context The event metadata.
@@ -45,13 +45,13 @@ exports.notifier = (file, context) => {
         const hashString = getURLForHash(digest.read())
         console.log('Got UHRP URL', hashString)
         await axios.post(
-      `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`, // ${NODE_ENV === 'development' ? 'http' : 'https'}://
-      {
-        adminToken: ADMIN_TOKEN,
-        fileHash: hashString,
-        objectIdentifier,
-        fileSize: file.size
-      }
+          `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`, // ${NODE_ENV === 'development' ? 'http' : 'https'}://
+          {
+            adminToken: ADMIN_TOKEN,
+            fileHash: hashString,
+            objectIdentifier,
+            fileSize: file.size
+          }
         )
         resolve(true)
       })

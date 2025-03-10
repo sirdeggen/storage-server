@@ -1,16 +1,15 @@
 {
-  "name": "@cwi/nanostore",
-  "version": "0.2.37",
-  "private": true,
+  "name": "@bsv/uhrp-storage-server",
+  "version": "0.1.0",
   "main": "./out/src/index.js",
   "types": "./out/src/index.d.ts",
   "files": [
     "out/src",
     "src"
   ],
-  "repository": "https://github.com/p2ppsr/nanostore",
-  "author": "Peer-to-peer Privacy Systems Research, LLC",
-  "license": "PROPRIETARY",
+  "repository": "https://github.com/bitcoin-sv/uhrp-storage-server",
+  "author": "BSV Association",
+  "license": "SEE LICENSE IN LICENSE.txt",
   "dependencies": {
     "@bsv/auth-express-middleware": "^1.0.2",
     "@bsv/payment-express-middleware": "^1.0.1",
