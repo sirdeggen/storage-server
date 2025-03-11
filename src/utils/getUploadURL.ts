@@ -36,14 +36,14 @@ const prodUploadFunction = async ({ size, objectIdentifier }: UploadParams): Pro
   const bucket = storage.bucket(GCP_BUCKET_NAME)
   const bucketFile = bucket.file(`cdn/${objectIdentifier}`)
 
-  const uploadURL = await (bucketFile.getSignedUrl({
+  const [uploadURL] = await (bucketFile.getSignedUrl({
     version: 'v4',
     action: 'write',
     expires: Date.now() + 604000 * 1000, // 1 week
     extensionHeaders: {
       'content-length': size.toString()
     }
-  })).toString()
+  }))
   return { uploadURL }
 }
 
