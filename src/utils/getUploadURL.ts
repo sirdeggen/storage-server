@@ -12,9 +12,9 @@ interface UploadResponse {
   uploadURL: string
 }
 
-const devUploadFunction = (): UploadResponse => {
+const devUploadFunction = (): Promise<UploadResponse> => {
   console.log('[DEV] Returning pretend upload URL http://localhost:8080/upload')
-  return { uploadURL: 'http://localhost:8080/upload' }
+  return Promise.resolve({ uploadURL: 'http://localhost:8080/upload' })
 }
 
 /**
@@ -44,6 +44,7 @@ const prodUploadFunction = async ({ size, objectIdentifier }: UploadParams): Pro
       'content-length': size.toString()
     }
   }))
+  console.log('UPLOAD URL IS', uploadURL)
   return { uploadURL }
 }
 

@@ -5,7 +5,6 @@ import getPriceForFile from '../utils/getPriceForFile'
 import getUploadURL from '../utils/getUploadURL'
 
 const MIN_HOSTING_MINUTES = process.env.MIN_HOSTING_MINUTES
-const HOSTING_DOMAIN = process.env.HOSTING_DOMAIN
 
 interface UploadRequest extends Request {
     body: {
@@ -64,17 +63,17 @@ export async function uploadHandler(req: UploadRequest, res: Response<UploadResp
         const amount = await getPriceForFile({ fileSize, retentionPeriod })
         const objectIdentifier = Utils.toBase58(Array.from(crypto.randomBytes(16)))
 
-        const uploadURL = await getUploadURL({
+        console.log('Getting upload URL...')
+        const { uploadURL } = await getUploadURL({
             size: fileSize,
             objectIdentifier
-        }).toString()
-
-        const publicURL = `${HOSTING_DOMAIN}/cdn/${objectIdentifier}`
+        })
+        console.log('upload URL after getting', uploadURL)
+        console.log('upload URL if we .toString()', uploadURL.toString())
 
         return res.status(200).json({
             status: 'success',
             uploadURL,
-            publicURL,
             amount,
             description: 'File can now be uploaded.'
         })
