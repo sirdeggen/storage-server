@@ -14,7 +14,7 @@ interface UploadResponse {
 
 const devUploadFunction = (): UploadResponse => {
   console.log('[DEV] Returning pretend upload URL http://localhost:8080/upload')
-  return { uploadURL: 'http://localhost:8080/upload'}
+  return { uploadURL: 'http://localhost:8080/upload' }
 }
 
 /**
@@ -47,5 +47,4 @@ const prodUploadFunction = async ({ size, objectIdentifier }: UploadParams): Pro
   return { uploadURL }
 }
 
-const getUploadURL = NODE_ENV === 'development' ? devUploadFunction : prodUploadFunction
-export default getUploadURL
+export default NODE_ENV === 'development' ? devUploadFunction : prodUploadFunction

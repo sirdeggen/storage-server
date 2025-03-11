@@ -4,7 +4,6 @@ const axios = require('axios')
 const { getURLForHash } = require('uhrp-url')
 
 const {
-  NODE_ENV,
   HOSTING_DOMAIN,
   ROUTING_PREFIX,
   ADMIN_TOKEN
@@ -45,7 +44,7 @@ exports.notifier = (file, context) => {
         const hashString = getURLForHash(digest.read())
         console.log('Got UHRP URL', hashString)
         await axios.post(
-          `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`, // ${NODE_ENV === 'development' ? 'http' : 'https'}://
+          `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`,
           {
             adminToken: ADMIN_TOKEN,
             fileHash: hashString,

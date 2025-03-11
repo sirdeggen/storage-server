@@ -6,15 +6,13 @@ import getUploadURL from '../utils/getUploadURL'
 
 const MIN_HOSTING_MINUTES = process.env.MIN_HOSTING_MINUTES
 const HOSTING_DOMAIN = process.env.HOSTING_DOMAIN
-const ROUTING_PREFIX = process.env.ROUTING_PREFIX
-const NODE_ENV = process.env.NODE_ENV
 
 interface UploadRequest extends Request {
     body: {
         fileSize: number
         retentionPeriod: number
     }
-    authrite: {
+    auth: {
         identityKey: string
     }
 }
@@ -23,17 +21,15 @@ interface UploadResponse {
     status: 'success' | 'error'
     uploadURL?: string
     publicURL?: string
+    amount?: number
     code?: string
     description?: string
-    orderID?: string
-    amount?: number
 }
 
-//TODO ADD DOCUMENTATION!
 export async function uploadHandler(req: UploadRequest, res: Response<UploadResponse>) {
     try {
         const { fileSize, retentionPeriod } = req.body
-        
+
         if (!fileSize || !Number.isInteger(fileSize) || fileSize <= 0) {
             return res.status(400).json({
                 status: 'error',
@@ -61,7 +57,7 @@ export async function uploadHandler(req: UploadRequest, res: Response<UploadResp
             return res.status(400).json({
                 status: 'error',
                 code: 'ERR_INVALID_SIZE',
-                description: 'Max supported file size is 11000000000 bytes.s'
+                description: 'Max supported file size is 11000000000 bytes.'
             })
         }
 
@@ -73,7 +69,7 @@ export async function uploadHandler(req: UploadRequest, res: Response<UploadResp
             objectIdentifier
         }).toString()
 
-        const publicURL = `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/cdn/${objectIdentifier}`
+        const publicURL = `${HOSTING_DOMAIN}/cdn/${objectIdentifier}`
 
         return res.status(200).json({
             status: 'success',
@@ -97,18 +93,19 @@ export default {
     path: '/upload',
     summary: 'Returns an uploadURL and publicURL for file hosting.',
     parameters: {
-      fileSize: 'Size of file in bytes',
-      retentionPeriod: 'Number of minutes to host the file'
+        fileSize: 'Size of file in bytes',
+        retentionPeriod: 'Number of minutes to host the file'
     },
     exampleResponse: {
-      status: 'success',
-      uploadURL: 'https://some-presigned-url...', // JACKIE TODO
-      publicURL: 'https://host.com/cdn/someObjectId'
+        status: 'success',
+        amount: 42,
+        uploadURL: 'https://some-presigned-url...',
+        publicURL: 'https://host.com/cdn/someObjectId'
     },
     errors: [
-      'ERR_INVALID_SIZE',
-      'ERR_NO_RETENTION_PERIOD',
-      'ERR_INTERNAL_UPLOAD'
+        'ERR_INVALID_SIZE',
+        'ERR_NO_RETENTION_PERIOD',
+        'ERR_INTERNAL_UPLOAD'
     ],
-    func: uploadHandler  
+    func: uploadHandler
 }

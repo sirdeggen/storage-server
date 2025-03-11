@@ -11,10 +11,10 @@
   "author": "BSV Association",
   "license": "SEE LICENSE IN LICENSE.txt",
   "dependencies": {
-    "@bsv/auth-express-middleware": "^1.0.2",
-    "@bsv/payment-express-middleware": "^1.0.1",
-    "@bsv/sdk": "^1.3.22",
-    "@bsv/wallet-toolbox-client": "^1.1.30",
+    "@bsv/auth-express-middleware": "^1.0.11",
+    "@bsv/payment-express-middleware": "^1.0.3",
+    "@bsv/sdk": "^1.4.0",
+    "@bsv/wallet-toolbox-client": "^1.2.1",
     "@bugsnag/js": "^7.14.1",
     "@bugsnag/plugin-express": "^7.14.0",
     "@google-cloud/storage": "^5.16.1",
@@ -30,12 +30,7 @@
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "standard --fix .",
-    "tonpm": "npm run tonone && npm i ninja-base authrite-express babbage-bsv pushdrop --silent",
-    "tonone": "npm remove ninja-base authrite-express babbage-bsv pushdrop --silent"
-  },
-  "publishConfig": {
-    "registry": "https://npm-registry.babbage.systems/"
+    "lint": "standard --fix ."
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",

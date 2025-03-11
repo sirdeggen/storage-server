@@ -21,13 +21,10 @@ perl -E'
   say "        - name: $_
           value: \x27$ENV{$_}\x27" for @ARGV;
 ' NODE_ENV \
-    MIGRATE_KEY \
     PRICE_PER_GB_MO \
-    ROUTING_PREFIX \
     MIN_HOSTING_MINUTES \
     HOSTING_DOMAIN \
     ADMIN_TOKEN \
-    UHRP_HOST_PRIVATE_KEY \
     SERVER_PRIVATE_KEY \
     GCP_STORAGE_CREDS \
     GCP_PROJECT_ID \

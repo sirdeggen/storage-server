@@ -10,15 +10,10 @@ import { getWallet } from './utils/walletSingleton'
 import routes from './routes'
 import getPriceForFile from './utils/getPriceForFile'
 
-const UHRP_HOST_PRIVATE_KEY = process.env.UHRP_HOST_PRIVATE_KEY as string
-const NODE_ENV = process.env.NODE_ENV
-const HTTP_PORT = 8080
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
-const HOSTING_DOMAIN = process.env.HOSTING_DOMAIN as string
+const MIN_HOSTING_MINUTES = process.env.MIN_HOSTING_MINUTES as string
+const HTTP_PORT = 8080
 
-const enviornment = (NODE_ENV as 'development' | 'staging' | 'production') || 'development'
-
-const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
 app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
 
@@ -51,121 +46,113 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use(express.static('public'))
 
-// Unsecured pre-Authrite routes are added first
-interface Route<T = Request> {
-  path: string,
-  type: 'get' | 'post' | 'put' | 'delete' | 'patch'
-  func: (req: Request, res: Response, next: NextFunction) => void | Promise<void>
-  unsecured?: boolean
-  middleware?: (req: Request, res: Response, next: NextFunction) => void
-}
+// Unsecured pre-auth routes are added first
+const preAuthRoutes = Object.values(routes.preAuth);
+const postAuthRoutes = Object.values(routes.postAuth);
 
-const preAuthriteRoutes = Object.values(routes.preAuthrite);
-const postAuthriteRoutes = Object.values(routes.postAuthrite);
-
-// Cycle through pre-authrite routes
-preAuthriteRoutes.filter(route => (route as any).unsecured).forEach((route) => {
-  console.log(`adding route ${route.path} pre-authrite`)
+// Cycle through pre-auth routes
+preAuthRoutes.filter(route => (route as any).unsecured).forEach((route) => {
+  console.log(`adding pre-auth route ${route.path}`)
   // If we need middleware for a route, attach it
   if ((route as any).middleware) {
-    app[route.type](
-      `${ROUTING_PREFIX}${route.path}`,
+    app[route.type as 'get' | 'put' | 'post' | 'patch' | 'delete'](
+      route.path,
       (route as any).middleware,
       (route as any).func
     )
   } else {
-    app[route.type](`${ROUTING_PREFIX}${route.path}`, (route as any).func)
+    app[route.type as 'get' | 'put' | 'post' | 'patch' | 'delete'](route.path, (route as any).func)
   }
 })
 
-// This ensures that HTTPS is used unless you are in development mode
+// This ensures that HTTPS is used for uploads
 app.use((req: Request, res: Response, next: NextFunction) => {
   if (
     !req.secure &&
-    req.get('x-forwarded-proto') !== 'https' &&
-    NODE_ENV !== 'development'
+    req.get('x-forwarded-proto') !== 'https'
   ) {
     return res.redirect('https://' + req.get('host') + req.url)
   }
   next()
 });
 
-// Secured pre-Authrite routes are added after the HTTPS redirect
-preAuthriteRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
+// Secured pre-auth routes are added after the HTTPS redirect
+preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
   console.log(`adding route ${route.path} https required`)
   // If we need middleware for a route, attach it
   if ((route as any).middleware) {
-    app[route.type](
-      `${ROUTING_PREFIX}${route.path}`,
+    app[route.type as 'get' | 'put' | 'post' | 'patch' | 'delete'](
+      route.path,
       (route as any).middleware,
       (route as any).func
     )
   } else {
-    app[route.type](`${ROUTING_PREFIX}${route.path}`, (route as any).func)
+    app[route.type as 'get' | 'put' | 'post' | 'patch' | 'delete'](route.path, (route as any).func)
   }
 })
 
-// Authrite is enforced from here forward
+  // Auth is enforced from here forward
+  ; (async () => {
+    const wallet = await getWallet()
 
-const wallet = getWallet()
+    const authMiddleware = createAuthMiddleware({
+      wallet,
+      allowUnauthenticated: false
+    })
 
-const authMiddleware = createAuthMiddleware({
-  wallet,
-  allowUnauthenticated: false
-})
+    const paymentMiddleware = createPaymentMiddleware({
+      wallet,
+      calculateRequestPrice: async (req) => {
 
-const paymentMiddleware = createPaymentMiddleware({
-  wallet,
-  calculateRequestPrice: async (req) => {
-
-    if (req.url === '/upload') {
-      const { fileSize, retentionPeriod } = (req.body as any) || {}
-      if (!fileSize || !retentionPeriod) {
+        if (req.url === '/upload') {
+          const { fileSize, retentionPeriod } = (req.body as any) || {}
+          try {
+            const satoshis = await getPriceForFile({ fileSize: +fileSize, retentionPeriod: +retentionPeriod })
+            return satoshis
+          } catch (e) {
+            return 0
+          }
+        }
         return 0
       }
-      const satoshis = await getPriceForFile({ fileSize: +fileSize, retentionPeriod: +retentionPeriod })
-      return satoshis
-    }
-    return 0
-  }
-})
+    })
 
-app.use(authMiddleware);
-app.use(paymentMiddleware)
+    app.use(authMiddleware);
+    app.use(paymentMiddleware)
 
 
-// Secured, post-Authrite routes are added
-postAuthriteRoutes.forEach((route) => {
-  console.log(`adding route ${route.path} https and authrite required`)
-  // If we need middleware for a route, attach it
-  if ((route as any).middleware) {
-    app[route.type](
-      `${ROUTING_PREFIX}${route.path}`,
-      (route as any).middleware,
-      (route as any).func
-    )
-  } else {
-    app[route.type](`${ROUTING_PREFIX}${route.path}`, (route as any).func)
-  }
-})
+    // Secured, post-auth routes are added
+    postAuthRoutes.forEach((route) => {
+      console.log(`adding https post-auth route ${route.path}`)
+      // If we need middleware for a route, attach it
+      if ((route as any).middleware) {
+        app[route.type as 'get' | 'put' | 'post' | 'patch' | 'delete'](
+          route.path,
+          (route as any).middleware,
+          (route as any).func
+        )
+      } else {
+        app[route.type as 'get' | 'put' | 'post' | 'patch' | 'delete'](route.path, (route as any).func)
+      }
+    })
 
-app.use((req, res) => {
-  console.log('404', req.url)
-  res.status(404).json({
-    status: 'error',
-    code: 'ERR_ROUTE_NOT_FOUND',
-    description: 'Route not found.'
-  })
-})
+    app.use((req, res) => {
+      console.log('404', req.url)
+      res.status(404).json({
+        status: 'error',
+        code: 'ERR_ROUTE_NOT_FOUND',
+        description: 'Route not found.'
+      })
+    })
 
-app.listen(HTTP_PORT, () => {
-  console.log('UHRP Storage Server listening on port', HTTP_PORT)
+    app.listen(HTTP_PORT, () => {
+      console.log('UHRP Storage Server listening on port', HTTP_PORT)
 
-  if (NODE_ENV !== 'development') {
-    spawn('nginx', [], { stdio: [process.stdin, process.stdout, process.stderr] })
-  }
+      spawn('nginx', [], { stdio: [process.stdin, process.stdout, process.stderr] })
 
-  const addr = PrivateKey
-    .fromString(UHRP_HOST_PRIVATE_KEY)
-  console.log(`UHRP Host Address: ${addr}`)
-})
+      const addr = PrivateKey
+        .fromString(SERVER_PRIVATE_KEY).toPublicKey().toAddress()
+      console.log(`UHRP Host Address: ${addr}`)
+    })
+
+  })();
