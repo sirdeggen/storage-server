@@ -2,8 +2,8 @@
 
 if [ $NODE_ENV = 'production' ] || [ $NODE_ENV = 'staging' ]
 then
-  echo "$GCP_STORAGE_CREDS" > /app/storage-creds.json
   npm run build
+  echo "$GCP_STORAGE_CREDS" > /app/out/storage-creds.json
   node ./out/src/index.js
   exit
 fi
