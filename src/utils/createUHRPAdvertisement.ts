@@ -51,7 +51,7 @@ export default async function createUHRPAdvertisement({
 
     const lockingScript = await pushdrop.lock(
         fields,
-        [2, 'uhrp'],
+        [2, 'uhrp advertisement'],
         '1',
         'anyone',
         true
