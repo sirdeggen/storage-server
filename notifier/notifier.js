@@ -32,9 +32,12 @@ exports.notifier = (file, context) => {
     return
   }
 
-  return new Promise((resolve, reject) => {
+  // eslint-disable-next-line
+  return new Promise(async (resolve, reject) => {
     try {
       const storageFile = storage.bucket(file.bucket).file(file.name)
+      const [metadata] = await storageFile.getMetadata();
+      const expiryTime = metadata.customTime;
       const digest = crypto.createHash('sha256')
       const fileStream = storageFile.createReadStream()
       fileStream.pipe(digest)
@@ -48,6 +51,7 @@ exports.notifier = (file, context) => {
             adminToken: ADMIN_TOKEN,
             fileHash: hashString,
             objectIdentifier,
+            expiryTime,
             fileSize: file.size
           }
         )

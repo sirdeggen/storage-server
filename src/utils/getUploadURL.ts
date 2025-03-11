@@ -4,8 +4,9 @@ import path from 'path'
 const { NODE_ENV, GCP_BUCKET_NAME, GCP_PROJECT_ID } = process.env
 
 interface UploadParams {
-  size: Number
-  objectIdentifier: String
+  size: number
+  expiryTime: number
+  objectIdentifier: string
 }
 
 interface UploadResponse {
@@ -23,7 +24,7 @@ const devUploadFunction = (): Promise<UploadResponse> => {
  * @param {UploadParams} params - Parameters for file upload.
  * @returns {Promise<number>} - The price in satoshis.
  */
-const prodUploadFunction = async ({ size, objectIdentifier }: UploadParams): Promise<UploadResponse> => {
+const prodUploadFunction = async ({ size, expiryTime, objectIdentifier }: UploadParams): Promise<UploadResponse> => {
   if (!GCP_BUCKET_NAME || !GCP_PROJECT_ID) {
     throw new Error('Missing required Google Cloud Storage eviornment variables.')
   }
@@ -44,7 +45,11 @@ const prodUploadFunction = async ({ size, objectIdentifier }: UploadParams): Pro
       'content-length': size.toString()
     }
   }))
-  console.log('UPLOAD URL IS', uploadURL)
+
+  await bucketFile.setMetadata({
+    customTime: new Date(expiryTime + 300 * 1000).toISOString()
+  })
+
   return { uploadURL }
 }
 

@@ -66,7 +66,8 @@ export async function uploadHandler(req: UploadRequest, res: Response<UploadResp
         console.log('Getting upload URL...')
         const { uploadURL } = await getUploadURL({
             size: fileSize,
-            objectIdentifier
+            objectIdentifier,
+            expiryTime: retentionPeriod + Math.round(Date.now() / 1000)
         })
         console.log('upload URL after getting', uploadURL)
         console.log('upload URL if we .toString()', uploadURL.toString())
