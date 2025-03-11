@@ -5,7 +5,6 @@ const { getURLForHash } = require('uhrp-url')
 
 const {
   HOSTING_DOMAIN,
-  ROUTING_PREFIX,
   ADMIN_TOKEN
 } = process.env
 const storage = new Storage()
@@ -44,7 +43,7 @@ exports.notifier = (file, context) => {
         const hashString = getURLForHash(digest.read())
         console.log('Got UHRP URL', hashString)
         await axios.post(
-          `${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/advertise`,
+          `${HOSTING_DOMAIN}/advertise`,
           {
             adminToken: ADMIN_TOKEN,
             fileHash: hashString,

@@ -11,8 +11,7 @@ import routes from './routes'
 import getPriceForFile from './utils/getPriceForFile'
 
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
-const MIN_HOSTING_MINUTES = process.env.MIN_HOSTING_MINUTES as string
-const HTTP_PORT = 8080
+const HTTP_PORT = process.env.HTTP_PORT || 8080
 
 const app = express()
 app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
