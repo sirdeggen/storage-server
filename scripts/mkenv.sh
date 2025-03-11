@@ -29,6 +29,7 @@ perl -E'
     GCP_STORAGE_CREDS \
     GCP_PROJECT_ID \
     GCP__NAME \
+    GCP_BUCKET_NAME \
     WALLET_STORAGE_URL \
     BSV_NETWORK \
     HTTP_PORT >> $1
