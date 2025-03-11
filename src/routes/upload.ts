@@ -64,10 +64,10 @@ export async function uploadHandler(req: UploadRequest, res: Response<UploadResp
         const amount = await getPriceForFile({ fileSize, retentionPeriod })
         const objectIdentifier = Utils.toBase58(Array.from(crypto.randomBytes(16)))
 
-        const { uploadURL } = await getUploadURL({
+        const uploadURL = await getUploadURL({
             size: fileSize,
             objectIdentifier
-        })
+        }).toString()
 
         const publicURL = `${HOSTING_DOMAIN}/cdn/${objectIdentifier}`
 
