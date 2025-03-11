@@ -8,8 +8,7 @@ const createNewTransaction = require('../../utils/createNewTransaction')
 
 const {
   MIN_HOSTING_MINUTES,
-  HOSTING_DOMAIN,
-  ROUTING_PREFIX
+  HOSTING_DOMAIN
 } = process.env
 
 jest.mock('../../utils/getPriceForFile')
@@ -183,7 +182,7 @@ describe('invoice', () => {
         { amount: 2250, outputScript: 'MOCK_OS_1' },
         { amount: 750, outputScript: 'MOCK_OS_2' }
       ],
-      publicURL: `https://${HOSTING_DOMAIN}${ROUTING_PREFIX || ''}/file/${oid}`
+      publicURL: `https://${HOSTING_DOMAIN}/file/${oid}`
     })
   })
   it('Throws unknown errors', async () => {

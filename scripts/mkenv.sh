@@ -29,7 +29,8 @@ perl -E'
     GCP_STORAGE_CREDS \
     GCP_PROJECT_ID \
     GCP__NAME \
-    STORAGE_URL \
+    WALLET_STORAGE_URL \
+    BSV_NETWORK \
     HTTP_PORT >> $1
 
 echo "Built! Contents of $1:"
