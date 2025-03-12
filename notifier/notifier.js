@@ -37,7 +37,8 @@ exports.notifier = (file, context) => {
     try {
       const storageFile = storage.bucket(file.bucket).file(file.name)
       const [metadata] = await storageFile.getMetadata();
-      const expiryTime = metadata.customTime;
+      const uploaderIdentityKey = metadata.uploaderIdentityKey;
+      const expiryTime = Math.round(new Date(metadata.customTime).getTime() / 1000);
       const digest = crypto.createHash('sha256')
       const fileStream = storageFile.createReadStream()
       fileStream.pipe(digest)
@@ -50,6 +51,7 @@ exports.notifier = (file, context) => {
           {
             adminToken: ADMIN_TOKEN,
             fileHash: hashString,
+            uploaderIdentityKey,
             objectIdentifier,
             expiryTime,
             fileSize: file.size

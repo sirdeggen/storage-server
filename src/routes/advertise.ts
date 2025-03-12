@@ -16,7 +16,7 @@ interface AdvertiseRequest extends Request {
     hash: number[]
     objectIdentifier: string
     fileSize: number
-    retentionPeriod: number
+    expiryTime: number
   }
 }
 
@@ -36,7 +36,7 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
   }
 
   try {
-    const expiryTime = Date.now() + req.body.retentionPeriod * 60 * 1000
+    const expiryTime = req.body.expiryTime
 
     const storageFile = storage
       .bucket(GCP_BUCKET_NAME as string)
