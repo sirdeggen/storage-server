@@ -38,7 +38,7 @@ export async function uploadHandler(req: UploadRequest, res: Response<UploadResp
             })
         }
         if (!retentionPeriod) {
-            return res.status(40).json({
+            return res.status(400).json({
                 status: 'error',
                 code: 'ERR_NO_RETENTION_PERIOD',
                 description: 'You must specify the number of minutes to host the file.'
@@ -68,7 +68,7 @@ export async function uploadHandler(req: UploadRequest, res: Response<UploadResp
             size: fileSize,
             objectIdentifier,
             uploaderIdentityKey: req.auth.identityKey,
-            expiryTime: retentionPeriod + Math.round(Date.now() / 1000)
+            expiryTime: (retentionPeriod * 60) + Math.round(Date.now() / 1000)
         })
         console.log('upload URL', uploadURL)
         console.log('requiredHeaders', requiredHeaders)
@@ -102,7 +102,7 @@ export default {
         status: 'success',
         amount: 42,
         uploadURL: 'https://some-presigned-url...',
-        publicURL: 'https://host.com/cdn/someObjectId'
+        requiredHeaders: { 'content-length': 1244 }
     },
     errors: [
         'ERR_INVALID_SIZE',

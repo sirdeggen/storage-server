@@ -1,6 +1,7 @@
 import { Storage } from '@google-cloud/storage';
 import createUHRPAdvertisement from '../utils/createUHRPAdvertisement';
 import { Request, Response } from 'express';
+import { StorageUtils } from '@bsv/sdk';
 
 const {
   ADMIN_TOKEN,
@@ -13,7 +14,7 @@ const storage = new Storage()
 interface AdvertiseRequest extends Request {
   body: {
     adminToken: string
-    hash: number[]
+    uhrpUrl: string
     objectIdentifier: string
     fileSize: number
     expiryTime: number
@@ -28,7 +29,7 @@ interface AdvertiseResponse {
 
 const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseResponse>) => {
   if (typeof ADMIN_TOKEN !== 'string' || ADMIN_TOKEN.length <= 10 || req.body.adminToken !== ADMIN_TOKEN) {
-    res.status(401).json({
+    return res.status(401).json({
       status: 'error',
       code: 'ERR_UNAUTHORIZED',
       description: 'Failed to advertise hosting commitment!'
@@ -36,14 +37,14 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
   }
 
   try {
-    const expiryTime = req.body.expiryTime
+    const expiryTime = Number(req.body.expiryTime)
 
     const storageFile = storage
       .bucket(GCP_BUCKET_NAME as string)
       .file(`cdn/${req.body.objectIdentifier}`)
 
     await createUHRPAdvertisement({
-      hash: req.body.hash,
+      hash: StorageUtils.getHashFromURL(req.body.uhrpUrl),
       objectIdentifier: req.body.objectIdentifier,
       url: `${HOSTING_DOMAIN}/cdn/${req.body.objectIdentifier}`,
       expiryTime,
@@ -71,7 +72,7 @@ export default {
   summary: 'Administrative endpoint to trigger UHRP advertisements when new files are uploaded.',
   parameters: {
     adminToken: 'Server admin token',
-    fileHash: 'The UHRP hash to advertise',
+    uhrpUrl: 'The UHRP URL string to advertise',
     objectIdentifier: 'The ID of this contract',
     fileSize: 'The length of the file'
   },

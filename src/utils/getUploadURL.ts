@@ -50,7 +50,7 @@ const prodUploadFunction = async ({
   const bucketFile = bucket.file(`cdn/${objectIdentifier}`)
 
   // Calculate the custom time (e.g., expiry time plus 5 minutes in this example)
-  const customTime = new Date(expiryTime + 300 * 1000).toISOString()
+  const customTime = new Date((expiryTime + 300) * 1000).toISOString()
 
   // Generate the signed URL including the metadata headers.
   // The extensionHeaders are part of the signature and must be included by the client in the PUT request.

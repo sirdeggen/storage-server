@@ -44,13 +44,13 @@ exports.notifier = (file, context) => {
       fileStream.pipe(digest)
       fileStream.on('end', async () => {
         digest.end()
-        const hashString = getURLForHash(digest.read())
-        console.log('Got UHRP URL', hashString)
+        const uhrpUrl = getURLForHash(digest.read())
+        console.log('Got UHRP URL', uhrpUrl)
         await axios.post(
           `${HOSTING_DOMAIN}/advertise`,
           {
             adminToken: ADMIN_TOKEN,
-            fileHash: hashString,
+            uhrpUrl,
             uploaderIdentityKey,
             objectIdentifier,
             expiryTime,
@@ -59,6 +59,7 @@ exports.notifier = (file, context) => {
         )
         resolve(true)
       })
+      fileStream.on('error', reject)
     } catch (e) {
       reject(e)
     }
