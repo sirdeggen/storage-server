@@ -52,7 +52,7 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
     })
 
     await storageFile.setMetadata({
-      customTime: new Date(expiryTime + 300 * 1000).toISOString()
+      customTime: new Date((expiryTime + 300) * 1000).toISOString()
     })
 
     res.status(200).json({ status: 'success' })
