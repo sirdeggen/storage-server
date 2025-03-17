@@ -37,12 +37,8 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
   }
 
   try {
-    const expiryTime = Number(req.body.expiryTime)
-
-    const storageFile = storage
-      .bucket(GCP_BUCKET_NAME as string)
-      .file(`cdn/${req.body.objectIdentifier}`)
-
+    const expiryTime = Number(req.body.expiryTime) // in seconds
+    
     await createUHRPAdvertisement({
       hash: StorageUtils.getHashFromURL(req.body.uhrpUrl),
       objectIdentifier: req.body.objectIdentifier,
@@ -51,6 +47,10 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
       contentLength: req.body.fileSize
     })
 
+    const storageFile = storage
+    .bucket(GCP_BUCKET_NAME as string)
+    .file(`cdn/${req.body.objectIdentifier}`)
+    
     await storageFile.setMetadata({
       customTime: new Date((expiryTime + 300) * 1000).toISOString()
     })

@@ -28,7 +28,7 @@ export default async function createUHRPAdvertisement({
         hash = StorageUtils.getHashFromURL(hash)
     }
 
-    const expiryTimeSeconds = Math.floor(expiryTime / 1000)
+    const expiryTimeSeconds = Math.floor(expiryTime)
     const key = PrivateKey.fromHex(SERVER_PRIVATE_KEY)
     const serverPublicKey = key.toPublicKey().toString()
 
