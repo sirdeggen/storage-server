@@ -1,8 +1,10 @@
 import { PushDrop, PrivateKey, Transaction, StorageUtils, Utils, AtomicBEEF, SHIPBroadcaster } from "@bsv/sdk"
 import { getWallet } from "./walletSingleton"
+import { Setup } from "@bsv/wallet-toolbox"
 
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
 const BSV_NETWORK = process.env.BSV_NETWORK as 'mainnet' | 'testnet'
+const WALLET_STORAGE_URL = process.env.WALLET_STORAGE_URL as string
 
 export interface AdvertisementParams {
     hash: number[]
@@ -47,7 +49,11 @@ export default async function createUHRPAdvertisement({
     ]
     console.log('fields', fields)
 
-    const wallet = await getWallet()
+    const wallet = await Setup.createWalletClientNoEnv({
+        chain: BSV_NETWORK === 'mainnet' ? 'main' : 'test',
+        rootKeyHex: SERVER_PRIVATE_KEY,
+        storageUrl: WALLET_STORAGE_URL
+    })
     const pushdrop = new PushDrop(wallet)
 
     const lockingScript = await pushdrop.lock(
