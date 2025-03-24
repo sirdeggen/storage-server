@@ -104,7 +104,9 @@ preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
 
     const authMiddleware = createAuthMiddleware({
       wallet,
-      allowUnauthenticated: false
+      allowUnauthenticated: false,
+      logger: console,
+      logLevel: 'debug'
     })
 
     const paymentMiddleware = createPaymentMiddleware({
