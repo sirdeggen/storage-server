@@ -9,7 +9,7 @@ import { createPaymentMiddleware } from '@bsv/payment-express-middleware'
 import { getWallet } from './utils/walletSingleton'
 import routes from './routes'
 import getPriceForFile from './utils/getPriceForFile'
-import { Setup } from '@bsv/wallet-toolbox'
+// import { Setup } from '@bsv/wallet-toolbox'
 
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
 const HTTP_PORT = process.env.HTTP_PORT || 8080
@@ -95,12 +95,12 @@ preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
 
   // Auth is enforced from here forward
   ; (async () => {
-    // const wallet = await getWallet()
-    const wallet = await Setup.createWalletClientNoEnv({
-      chain: BSV_NETWORK === 'mainnet' ? 'main' : 'test',
-      rootKeyHex: SERVER_PRIVATE_KEY,
-      storageUrl: WALLET_STORAGE_URL
-    })
+    const wallet = await getWallet()
+    // const wallet = await Setup.createWalletClientNoEnv({
+    //   chain: BSV_NETWORK === 'mainnet' ? 'main' : 'test',
+    //   rootKeyHex: SERVER_PRIVATE_KEY,
+    //   storageUrl: WALLET_STORAGE_URL
+    // })
 
     const authMiddleware = createAuthMiddleware({
       wallet,
