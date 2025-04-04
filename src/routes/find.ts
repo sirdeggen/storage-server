@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { Storage } from '@google-cloud/storage'
 import { getWallet } from '../utils/walletSingleton'
+import { getMetadata } from '../utils/getMetadata'
 
 const storage = new Storage()
 const { GCP_BUCKET_NAME } = process.env
@@ -34,59 +35,19 @@ const findHandler = async (req: FindRequest, res: Response<FindResponse>) => {
             })
         }
 
-        const wallet = await getWallet()
-        const { outputs } = await wallet.listOutputs({
-            basket: 'uhrp advertisements',
-            includeTags: true,
-            limit: 200
-        })
-
-        let objectIdentifier: string | null = null
-        for (const out of outputs) {
-            if (!out.tags) continue
-
-            const urlTag = out.tags.find(t => t.startsWith('uhrpUrl_'))
-            if (!urlTag) continue
-            
-            const urlValue = urlTag.substring('uhrpUrl_'.length)
-            if (urlValue === uhrpUrl) {
-                const objectIdTag = out.tags.find(t => t.startsWith('objectIdentifier_'))
-                if (!objectIdTag) continue
-
-                objectIdentifier = objectIdTag.substring('objectIdentifier_'.length)
-                break
-            }
-        }
-
-        if (!objectIdentifier) {
-            return res.status(404).json({
-                status: 'error',
-                code: 'ERR_NOT_FOUND',
-                description: `No advertisement found for uhrpUrl ${uhrpUrl}`
-            })
-        }
-        
-        const file = storage.bucket(GCP_BUCKET_NAME!).file(`cdn/${objectIdentifier}`)
-        const [metadata] = await file.getMetadata()
-
         const {
             name,
             size,
             contentType,
-            customTime
-        } = metadata
-
-        let expiryTime = 0
-        if (customTime) {
-            expiryTime = Math.floor(new Date(customTime).getTime() / (1000 * 60))
-        }
+            expiryTime
+        } = await getMetadata(uhrpUrl)
 
         return res.status(200).json({
             status: 'success',
             data: {
                 name,
                 size,
-                mimeType: contentType || '',
+                mimeType: contentType,
                 expiryTime
             }
         })

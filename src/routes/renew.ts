@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
 import { Storage } from '@google-cloud/storage'
-import { getObjectIdentifier } from '../utils/getObjectIdentifier'
 import getPriceForFile from '../utils/getPriceForFile'
 import { getWallet } from '../utils/walletSingleton'
 import { PushDrop, StorageUtils, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
+import { getMetadata } from '../utils/getMetadata'
 
 const storage = new Storage()
 const GCP_BUCKET_NAME = process.env.GCP_BUCKET_NAME as string
@@ -35,32 +35,21 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
                 description: 'Missing objectIdentifier or additionalMinutes.'
             })
         }
-        const objectIdentifier = getObjectIdentifier(uhrpUrl)
-        if (!objectIdentifier) {
-            return res.status(404).json({
-                status: 'error',
-                code: 'ERR_FILE_NOT_FOUND',
-                description: `File\'s object idetifier was not found for uhrpUrl ${uhrpUrl}`
-            })
-        }
-
-
-        const file = storage.bucket(GCP_BUCKET_NAME!).file(`cdn/${objectIdentifier}`)
-        const [metadata] = await file.getMetadata()
-
-        const prevExpiryTimeString = metadata.customTime || metadata.updated
-        const prevExpiryTimeMs = new Date(prevExpiryTimeString).getTime()
-        const prevExpiryTime = Math.floor(prevExpiryTimeMs / (1000 * 60))
+        const {
+            objectIdentifier,
+            size,
+            expiryTime: prevExpiryTime
+        } = await getMetadata(uhrpUrl)
 
         const newExpiryTime = prevExpiryTime + additionalMinutes
         const newExpiryTimeMS = newExpiryTime * 60 * 1000
         const newCustomTimeIso = new Date(newExpiryTimeMS).toISOString()
 
+        const fileSizeNum = parseInt(size, 10) || 0
         let amount = 0
-        const fileSize = parseInt(metadata.metadata?.fileSize, 10) || 0
-        if (fileSize) {
+        if (fileSizeNum > 0) {
             amount = await getPriceForFile({
-                fileSize,
+                fileSize: fileSizeNum,
                 retentionPeriod: additionalMinutes
             })
         }
@@ -74,19 +63,15 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             limit: 200
         })
 
-        const prevAdvertisement = outputs.find(o => {
-            if (!o.tags) return false
-            return (
-                o.tags.includes(`uhrpUrl_${uhrpUrl}`) &&
-                o.tags.includes(`objectIdentifier_${objectIdentifier}`)
-            )
-        })
-
+        const prevAdvertisement = outputs.find(o =>
+            o.tags?.includes(`uhrpUrl_${uhrpUrl}`) &&
+            o.tags?.includes(`objectIdentifier_${objectIdentifier}`)
+        )
         if (!prevAdvertisement) {
             return res.status(404).json({
                 status: 'error',
                 code: 'ERR_OLD_ADVERTISEMENT_NOT_FOUND',
-                description: `Couldn't find old advertisement output for uhrpUrl ${uhrpUrl}`
+                description: `Couldn't find old advertisement output for ${uhrpUrl}`
             })
         }
 
@@ -99,7 +84,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             hash,
             Utils.toArray(uhrpUrl, 'utf8'),
             new Utils.Writer().writeVarIntNum(newExpiryTimeSeconds).toArray(),
-            new Utils.Writer().writeVarIntNum(fileSize).toArray()
+            new Utils.Writer().writeVarIntNum(fileSizeNum).toArray()
         ]
 
         const pushdrop = new PushDrop(wallet)
@@ -120,8 +105,6 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
         newTags.push(`uhrpUrl_${uhrpUrl}`)
         newTags.push(`objectIdentifier_${objectIdentifier}`)
         newTags.push(`expiryTime_${newExpiryTimeSeconds}`)
-
-        await file.setMetadata({ customTime: newCustomTimeIso })
 
         const { signableTransaction } = await wallet.createAction({
             inputBEEF: BEEF,
@@ -169,6 +152,10 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
                 code: 'ERR_SIGNING_OLD_ADVERTISEMENT'
             })
         }
+
+        // Setting the new expiry time in the actual database
+        await storage.bucket(GCP_BUCKET_NAME).file(`cdn/${objectIdentifier}`)
+            .setMetadata({ customTime: newCustomTimeIso })
 
         return res.status(200).json({
             status: 'success',
