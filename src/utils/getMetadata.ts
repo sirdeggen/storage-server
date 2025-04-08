@@ -34,8 +34,8 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
     })
 
     let objectIdentifier
-    let bestExpiryTime = 0
-    // Finding the identifier for the file with the farthest expiry date
+    let maxpiry = 0
+    // Finding the identifier for the file with the maxpiry date
     for (const out of outputs) {
         if (!out.tags) continue
         const objectIdTag = out.tags.find(t => t.startsWith('objectIdentifier_'))
@@ -44,8 +44,8 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
         
         const expiryNum = parseInt(expiryTag.substring('expiryTime_'.length), 10) || 0
         
-        if (expiryNum > bestExpiryTime) {
-            bestExpiryTime = expiryNum
+        if (expiryNum > maxpiry) {
+            maxpiry = expiryNum
             objectIdentifier = objectIdTag.substring('objectIdentifier_'.length)
         }
     }

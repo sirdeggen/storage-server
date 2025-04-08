@@ -32,13 +32,14 @@ const listHandler = async (req: ListRequest, res: Response<ListResponse>) => {
                 description: 'Missing authfetch identityKey.'
             })
         }
-        
+
         const wallet = await getWallet()
 
         const { limit = 200, offset = 0 } = req.body
 
         const { outputs } = await wallet.listOutputs({
-            basket: 'uhrp advertisements', 
+            basket: 'uhrp advertisements',
+            tags: [`uploaderIdentityKey_${identityKey}`],
             includeTags: true,
             limit,
             offset
@@ -48,30 +49,23 @@ const listHandler = async (req: ListRequest, res: Response<ListResponse>) => {
         for (const out of outputs) {
             if (!out.tags) continue
 
-            const uploaderTag = out.tags.find(t => t.startsWith('uploaderIdentityKey_'))
-            if (!uploaderTag) continue
+            const uhrpUrlTag = out.tags.find(t => t.startsWith('uhrpUrl_'))
+            const expiryTimeTag = out.tags.find(t => t.startsWith('expiryTime_'))
 
-            const uploaderValue = uploaderTag.substring('uploaderIdentityKey_'.length, 10)
-            
-            if (uploaderValue === identityKey) {
-                const uhrpUrlTag = out.tags.find(t => t.startsWith('uhrpUrl_'))
-                const expiryTimeTag = out.tags.find(t => t.startsWith('expiryTime_'))
-
-                const uhrpUrl = uhrpUrlTag
+            const uhrpUrl = uhrpUrlTag
                 ? uhrpUrlTag.substring('uhrpUrl_'.length)
                 : ''
 
-                const expiryTime = expiryTimeTag
+            const expiryTime = expiryTimeTag
                 ? parseInt(expiryTimeTag.substring('expiryTime_'.length), 10)
                 : 0
 
-                result.push({
-                    uhrpUrl,
-                    expiryTime
-                })
-            }
+            result.push({
+                uhrpUrl,
+                expiryTime
+            })
         }
-        
+
         return res.status(200).json({
             status: 'success',
             uploads: result
@@ -95,7 +89,7 @@ export default {
         status: 'success',
         uploads: [
             {
-                
+
                 uhrpUrl: 'uhrp://abcd1234...',
                 expiryTime: 1691234567
             }

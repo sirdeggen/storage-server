@@ -84,7 +84,8 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             tagQueryMode: 'all',
             includeTags: true,
             include: 'entire transactions',
-            limit: 200
+            limit: limit !== undefined ? limit : 200,
+            offset: offset !== undefined ? offset : 0
         })
 
         if (!outputs || outputs.length === 0) {
@@ -95,8 +96,9 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             })
         }
 
+        // Finding the maxpiry file with the same url
         let prevAdvertisement
-        let bestExpiryTime = 0
+        let maxpiry = 0
         for (const out of outputs) {
             if (!out.tags) continue
             const expiryTag = out.tags.find(t => t.startsWith('expiryTime_'))
@@ -104,8 +106,8 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             
             const expiryNum = parseInt(expiryTag.substring('expiryTime_'.length), 10) || 0
             
-            if (expiryNum > bestExpiryTime) {
-                bestExpiryTime = expiryNum
+            if (expiryNum > maxpiry) {
+                maxpiry = expiryNum
                 prevAdvertisement = out
             }
         }
