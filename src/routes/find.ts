@@ -7,8 +7,15 @@ const storage = new Storage()
 const { GCP_BUCKET_NAME } = process.env
 
 interface FindRequest extends Request {
+    auth: {
+        identityKey: string
+    }
     query: {
         uhrpUrl?: string
+    }
+    body: {
+        limit?: number
+        offset?: number
     }
 }
 
@@ -26,7 +33,17 @@ interface FindResponse {
 
 const findHandler = async (req: FindRequest, res: Response<FindResponse>) => {
     try {
+        const { identityKey } = req.auth
+        if (!identityKey) {
+            return res.status(400).json({
+                status: 'error',
+                code: 'ERR_MISSING_IDENTITY_KEY',
+                description: 'Missing authfetch identityKey.'
+            })
+        }
+
         const { uhrpUrl } = req.query
+        const { limit, offset } = req.body
         if (!uhrpUrl) {
             return res.status(400).json({
                 status: 'error',
@@ -40,7 +57,7 @@ const findHandler = async (req: FindRequest, res: Response<FindResponse>) => {
             size,
             contentType,
             expiryTime
-        } = await getMetadata(uhrpUrl)
+        } = await getMetadata(uhrpUrl, identityKey, limit, offset)
 
         return res.status(200).json({
             status: 'success',
@@ -66,17 +83,17 @@ export default {
     path: '/find',
     summary: 'Finds metadata for the file matching a given uhrpUrl',
     parameters: {
-      uhrpUrl: 'The UHRP URL, e.g. ?uhrpUrl=uhrp://some-hash'
+        uhrpUrl: 'The UHRP URL, e.g. ?uhrpUrl=uhrp://some-hash'
     },
     exampleResponse: {
-      status: 'success',
-      data: {
-        name: 'cdn/abc123',
-        size: '4096',
-        mimeType: 'application/octet-stream',
-        expiryTime: '2025-04-03T14:00:00Z'
-      }
+        status: 'success',
+        data: {
+            name: 'cdn/abc123',
+            size: '4096',
+            mimeType: 'application/octet-stream',
+            expiryTime: '2025-04-03T14:00:00Z'
+        }
     },
     errors: ['ERR_NO_UHRP_URL', 'ERR_NOT_FOUND', 'ERR_FIND'],
     func: findHandler
-  }
+}

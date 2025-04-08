@@ -10,9 +10,14 @@ const GCP_BUCKET_NAME = process.env.GCP_BUCKET_NAME as string
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
 
 interface RenewRequest extends Request {
+    auth: {
+        identityKey: string
+    }
     body: {
         uhrpUrl: string
         additionalMinutes: number
+        limit?: number
+        offset?: number
     }
 }
 
@@ -27,7 +32,16 @@ interface RenewResponse {
 
 const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => {
     try {
-        const { uhrpUrl, additionalMinutes } = req.body
+        const { identityKey } = req.auth
+        if (!identityKey) {
+            return res.status(400).json({
+                status: 'error',
+                code: 'ERR_MISSING_IDENTITY_KEY',
+                description: 'Missing authfetch identityKey.'
+            })
+        }
+
+        const { uhrpUrl, additionalMinutes, limit, offset } = req.body
         if (!uhrpUrl || !additionalMinutes) {
             return res.status(400).json({
                 status: 'error',
@@ -35,11 +49,18 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
                 description: 'Missing objectIdentifier or additionalMinutes.'
             })
         }
+        if (additionalMinutes <= 0) {
+            return res.status(400).json({
+                status: 'error',
+                code: 'ERR_INVALID_TIME',
+                description: 'Additional Minutes must be a positive integer'
+            })
+        }
         const {
             objectIdentifier,
             size,
             expiryTime: prevExpiryTime
-        } = await getMetadata(uhrpUrl)
+        } = await getMetadata(uhrpUrl, identityKey, limit, offset)
 
         const newExpiryTime = prevExpiryTime + additionalMinutes
         const newExpiryTimeMS = newExpiryTime * 60 * 1000
@@ -54,19 +75,41 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             })
         }
 
+        // TODO handle edge case with multiple outputs
         // Redeeming old advertisement token and replacing it with the new ones
         const wallet = await getWallet()
-        const { outputs, BEEF } = await wallet.listOutputs({
+        const { outputs, BEEF,  } = await wallet.listOutputs({
             basket: 'uhrp advertisements',
+            tags: [`uhrpUrl_${uhrpUrl}`, `objectIdentifier_${objectIdentifier}`],
+            tagQueryMode: 'all',
             includeTags: true,
             include: 'entire transactions',
             limit: 200
         })
 
-        const prevAdvertisement = outputs.find(o =>
-            o.tags?.includes(`uhrpUrl_${uhrpUrl}`) &&
-            o.tags?.includes(`objectIdentifier_${objectIdentifier}`)
-        )
+        if (!outputs || outputs.length === 0) {
+            return res.status(404).json({
+                status: 'error',
+                code: 'ERR_OLD_ADVERTISEMENT_NOT_FOUND',
+                description: `Couldn't find old advertisement output for ${uhrpUrl}`
+            })
+        }
+
+        let prevAdvertisement
+        let bestExpiryTime = 0
+        for (const out of outputs) {
+            if (!out.tags) continue
+            const expiryTag = out.tags.find(t => t.startsWith('expiryTime_'))
+            if (!expiryTag) continue
+            
+            const expiryNum = parseInt(expiryTag.substring('expiryTime_'.length), 10) || 0
+            
+            if (expiryNum > bestExpiryTime) {
+                bestExpiryTime = expiryNum
+                prevAdvertisement = out
+            }
+        }
+                
         if (!prevAdvertisement) {
             return res.status(404).json({
                 status: 'error',
@@ -147,7 +190,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             }
         })
         if (!txid) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: 'error',
                 code: 'ERR_SIGNING_OLD_ADVERTISEMENT'
             })

@@ -1,6 +1,7 @@
 // /utils/getMetadata.ts
 import { Storage } from '@google-cloud/storage'
 import { getWallet } from './walletSingleton'
+import upload from '../routes/upload'
 
 const storage = new Storage()
 const { GCP_BUCKET_NAME } = process.env
@@ -21,32 +22,36 @@ interface FileMetadata {
  * @returns {Promise<FileMetadata>} An object containing file info.
  * @throws If no matching advertisement is found or GCS metadata fails.
  */
-export async function getMetadata(uhrpUrl: string): Promise<FileMetadata> {
+export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, limit?: number, offset?: number): Promise<FileMetadata> {
     const wallet = await getWallet()
     const { outputs } = await wallet.listOutputs({
         basket: 'uhrp advertisements',
+        tags: [`uhrpUrl_${uhrpUrl}`, `uploaderIdentityKey_${uploaderIdentityKey}`],
+        tagQueryMode: 'all',
         includeTags: true,
-        limit: 200
+        limit: limit !== undefined ? limit : 200,
+        offset: offset !== undefined ? offset : 0
     })
 
-    let objectIdentifier: string | null = null
+    let objectIdentifier
+    let bestExpiryTime = 0
+    // Finding the identifier for the file with the farthest expiry date
     for (const out of outputs) {
         if (!out.tags) continue
-        const urlTag = out.tags.find(t => t.startsWith('uhrpUrl_'))
-        if (!urlTag) continue
-
-        const urlValue = urlTag.substring('uhrpUrl_'.length)
-        if (urlValue === uhrpUrl) {
-            const objectIdTag = out.tags.find(t => t.startsWith('objectIdentifier_'))
-            if (objectIdTag) {
-                objectIdentifier = objectIdTag.substring('objectIdentifier_'.length)
-                break
-            }
+        const objectIdTag = out.tags.find(t => t.startsWith('objectIdentifier_'))
+        const expiryTag = out.tags.find(t => t.startsWith('expiryTime_'))
+        if (!objectIdTag || !expiryTag) continue
+        
+        const expiryNum = parseInt(expiryTag.substring('expiryTime_'.length), 10) || 0
+        
+        if (expiryNum > bestExpiryTime) {
+            bestExpiryTime = expiryNum
+            objectIdentifier = objectIdTag.substring('objectIdentifier_'.length)
         }
     }
 
     if (!objectIdentifier) {
-        throw new Error(`No advertisement found for uhrpUrl: ${uhrpUrl}`)
+        throw new Error(`No advertisement found for uhrpUrl: ${uhrpUrl} uploaderIdentityKey: ${uploaderIdentityKey}`)
     }
 
     // Fetch GCS metadata

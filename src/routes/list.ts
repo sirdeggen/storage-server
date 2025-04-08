@@ -6,6 +6,10 @@ interface ListRequest extends Request {
     auth: {
         identityKey: string
     }
+    body: {
+        limit: number
+        offset: number
+    }
 }
 
 interface ListResponse {
@@ -21,12 +25,23 @@ interface ListResponse {
 const listHandler = async (req: ListRequest, res: Response<ListResponse>) => {
     try {
         const identityKey = req.auth.identityKey
+        if (!identityKey) {
+            return res.status(400).json({
+                status: 'error',
+                code: 'ERR_MISSING_IDENTITY_KEY',
+                description: 'Missing authfetch identityKey.'
+            })
+        }
+        
         const wallet = await getWallet()
+
+        const { limit = 200, offset = 0 } = req.body
 
         const { outputs } = await wallet.listOutputs({
             basket: 'uhrp advertisements', 
             includeTags: true,
-            limit: 200
+            limit,
+            offset
         })
         const result: ListResponse['uploads'] = []
 
