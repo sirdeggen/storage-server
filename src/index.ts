@@ -130,12 +130,11 @@ preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
           if (!uhrpUrl || !additionalMinutes) return 0
           try {
             const { size } = await getMetadata(uhrpUrl)
-            const satoshis = await getPriceForFile({ fileSize: +size, retentionPeriod: +additionalMinutes})
+            const satoshis = await getPriceForFile({ fileSize: +size, retentionPeriod: +additionalMinutes })
             return satoshis
           } catch (e) {
             return 0
           }
-
         }
 
         return 0
