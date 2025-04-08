@@ -15,6 +15,7 @@ interface AdvertiseRequest extends Request {
   body: {
     adminToken: string
     uhrpUrl: string
+    uploaderIdentityKey: string
     objectIdentifier: string
     fileSize: number
     expiryTime: number
@@ -43,6 +44,7 @@ const advertiseHandler = async (req: AdvertiseRequest, res: Response<AdvertiseRe
       hash: StorageUtils.getHashFromURL(req.body.uhrpUrl),
       objectIdentifier: req.body.objectIdentifier,
       url: `${HOSTING_DOMAIN}/cdn/${req.body.objectIdentifier}`,
+      uploaderIdentityKey: req.body.uploaderIdentityKey,
       expiryTime,
       contentLength: req.body.fileSize
     })
