@@ -44,7 +44,7 @@ jobs:
           HTTP_PORT: ${{      env.CURRENT_BRANCH =='production' && secrets.HTTP_PORT || secrets.HTTP_PORT }}
       - uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.gcp_deploy_creds }}
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
       - uses: google-github-actions/deploy-cloudrun@v1
         with:
           metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
