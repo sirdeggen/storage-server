@@ -8,7 +8,7 @@ on:
 env:
   CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
   GCR_HOST: us.gcr.io
-  GOOGLE_PROJECT_ID: babbage-private
+  GOOGLE_PROJECT_ID: babbage-uhrp
   GCR_IMAGE_NAME: uhrp-storage
   
 jobs:
