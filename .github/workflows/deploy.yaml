@@ -9,7 +9,7 @@ env:
   CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
   GCR_HOST: us.gcr.io
   GOOGLE_PROJECT_ID: babbage-private
-  GCR_IMAGE_NAME: nanostore
+  GCR_IMAGE_NAME: uhrp-storage
   
 jobs:
   build:
@@ -28,7 +28,7 @@ jobs:
         run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml"
         env:
           IMAGE: "${{ env.GCR_HOST }}/${{ env.GOOGLE_PROJECT_ID }}/${{ env.GCR_IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}"
-          SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'prod-nanostore' || 'staging-nanostore' }}
+          SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'prod-uhrp' || 'staging-uhrp' }}
           NODE_ENV:     ${{ env.CURRENT_BRANCH =='production' && secrets.PROD_NODE_ENV || secrets.STAGING_NODE_ENV }}
           HOSTING_DOMAIN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HOSTING_DOMAIN || secrets.STAGING_HOSTING_DOMAIN }}
           MIGRATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIGRATE_KEY || secrets.STAGING_MIGRATE_KEY }}
