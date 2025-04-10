@@ -114,7 +114,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       }
     }
 
-    if (!prevAdvertisement || !prevAdvertisement.lockingScript) {
+    if (!prevAdvertisement || !BEEF) {
       return res.status(404).json({
         status: 'error',
         code: 'ERR_OLD_ADVERTISEMENT_NOT_FOUND',
@@ -122,10 +122,11 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       })
     }
 
-    const { fields: prevFields } = PushDrop.decode(LockingScript.fromHex(prevAdvertisement.lockingScript))
+    const parsedTx = Transaction.fromAtomicBEEF(BEEF)
+    const prevLockingScript = parsedTx.outputs[Number(prevAdvertisement.outpoint.split('.')[1])].lockingScript
+    const { fields: prevFields } = PushDrop.decode(prevLockingScript)
 
     // Building the new action's locking script
-    const hash = StorageUtils.getHashFromURL(uhrpUrl)
     const fields: number[][] = [
       prevFields[0],
       prevFields[1],
