@@ -1,50 +1,113 @@
-name: Deployment
+name: Deploy UHRP Storage Server to Cloud Run
+
 on:
   push:
     branches:
-      - master
-      - production
+      - master   # staging environment (deploy to staging on push to master)
+      - production   # production environment (deploy to prod on push to production branch)
 
-env:
-  CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
-  GCR_HOST: us-docker.pkg.dev
-  GOOGLE_PROJECT_ID: babbage-uhrp
-  GCR_IMAGE_NAME: uhrp-storage
-  
 jobs:
-  build:
-    name: Deploy
+  deploy:
+    name: Build and Deploy to Cloud Run
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read   # allow checking out repository content
+      # 'id-token: write' is only needed for Workload Identity Federation (not used here)
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: RafikFarhad/push-to-gcr-github-action@v4.1
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          gcloud_service_key: ${{ secrets.DOCKER_REGISTRY_PUSH_KEY }}
-          registry: ${{ env.GCR_HOST }}
-          project_id: ${{ env.GOOGLE_PROJECT_ID }}
-          image_name: ${{ env.GCR_IMAGE_NAME }}
-          image_tag: ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
-      - name: "Create service description file"
-        run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml"
-        env:
-          IMAGE: "${{ env.GCR_HOST }}/${{ env.GOOGLE_PROJECT_ID }}/${{ env.GCR_IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}"
-          SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'prod-uhrp' || 'staging-uhrp' }}
-          NODE_ENV:     ${{ env.CURRENT_BRANCH =='production' && secrets.PROD_NODE_ENV || secrets.STAGING_NODE_ENV }}
-          HOSTING_DOMAIN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HOSTING_DOMAIN || secrets.STAGING_HOSTING_DOMAIN }}
-#          MIGRATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIGRATE_KEY || secrets.STAGING_MIGRATE_KEY }}
-          PRICE_PER_GB_MO: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_PRICE_PER_GB_MO || secrets.STAGING_PRICE_PER_GB_MO }}
-          GCP_STORAGE_CREDS: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_STORAGE_CREDS || secrets.STAGING_GCP_STORAGE_CREDS }}
-          GCP_BUCKET_NAME: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_BUCKET_NAME || secrets.STAGING_GCP_BUCKET_NAME }}
-          GCP_PROJECT_ID: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_PROJECT_ID || secrets.STAGING_GCP_PROJECT_ID }}
-          SERVER_PRIVATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_SERVER_PRIVATE_KEY || secrets.STAGING_SERVER_PRIVATE_KEY }}
-          MIN_HOSTING_MINUTES: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIN_HOSTING_MINUTES || secrets.STAGING_MIN_HOSTING_MINUTES }}
-          ADMIN_TOKEN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_ADMIN_TOKEN || secrets.STAGING_ADMIN_TOKEN }}
-          WALLET_STORAGE_URL: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_WALLET_STORAGE_URL || secrets.STAGING_WALLET_STORAGE_URL }}
-          BSV_NETWORK: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_BSV_NETWORK || secrets.STAGING_BSV_NETWORK }}
-          HTTP_PORT: ${{      env.CURRENT_BRANCH =='production' && secrets.HTTP_PORT || secrets.HTTP_PORT }}
-      - uses: google-github-actions/auth@v1
+          project_id: ${{ secrets.STAGING_GCP_PROJECT_ID }}  # default to staging project (for production, project is specified during deploy)
+          # Installs the gcloud CLI for use in subsequent steps
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-      - uses: google-github-actions/deploy-cloudrun@v1
+          # Authenticates with GCP using the service account JSON credentials (stored in a GitHub secret)
+
+      - name: Set environment variables for deployment
+        run: |
+          # Determine target environment (staging or production) based on branch name
+          if [ "${GITHUB_REF##*/}" = "production" ]; then
+            # Production branch -> set production environment variables
+            echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+            echo "SERVICE_NAME=prod-uhrp" >> $GITHUB_ENV       # Cloud Run service name for production
+            # Export all production configuration secrets as env vars
+            echo "NODE_ENV=${{ secrets.PROD_NODE_ENV }}" >> $GITHUB_ENV
+            echo "HOSTING_DOMAIN=${{ secrets.PROD_HOSTING_DOMAIN }}" >> $GITHUB_ENV    # e.g. prod.uhrp.example.com
+            echo "ADMIN_TOKEN=${{ secrets.PROD_ADMIN_TOKEN }}" >> $GITHUB_ENV
+            echo "GCP_BUCKET_NAME=${{ secrets.PROD_GCP_BUCKET_NAME }}" >> $GITHUB_ENV
+            echo "MIN_HOSTING_MINUTES=${{ secrets.PROD_MIN_HOSTING_MINUTES }}" >> $GITHUB_ENV
+            echo "PRICE_PER_GB_MO=${{ secrets.PROD_PRICE_PER_GB_MO }}" >> $GITHUB_ENV
+            # Handle multi-line secrets (like private keys) with EOF to preserve formatting
+            echo "SERVER_PRIVATE_KEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.PROD_SERVER_PRIVATE_KEY }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            echo "WALLET_STORAGE_URL=${{ secrets.PROD_WALLET_STORAGE_URL }}" >> $GITHUB_ENV
+            # Define Docker image name (with commit SHA) for production
+            echo "IMAGE=us-docker.pkg.dev/${{ secrets.PROD_GCP_PROJECT_ID }}/uhrp-storage/uhrp-storage:${GITHUB_SHA}" >> $GITHUB_ENV
+          else
+            # Master branch -> set staging environment variables
+            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+            echo "SERVICE_NAME=staging-uhrp" >> $GITHUB_ENV    # Cloud Run service name for staging
+            # Export all staging configuration secrets as env vars
+            echo "NODE_ENV=${{ secrets.STAGING_NODE_ENV }}" >> $GITHUB_ENV
+            echo "HOSTING_DOMAIN=${{ secrets.STAGING_HOSTING_DOMAIN }}" >> $GITHUB_ENV  # staging.uhrp.example.com for staging
+            echo "ADMIN_TOKEN=${{ secrets.STAGING_ADMIN_TOKEN }}" >> $GITHUB_ENV
+            echo "GCP_BUCKET_NAME=${{ secrets.STAGING_GCP_BUCKET_NAME }}" >> $GITHUB_ENV
+            echo "MIN_HOSTING_MINUTES=${{ secrets.STAGING_MIN_HOSTING_MINUTES }}" >> $GITHUB_ENV
+            echo "PRICE_PER_GB_MO=${{ secrets.STAGING_PRICE_PER_GB_MO }}" >> $GITHUB_ENV
+            echo "SERVER_PRIVATE_KEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.STAGING_SERVER_PRIVATE_KEY }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            echo "WALLET_STORAGE_URL=${{ secrets.STAGING_WALLET_STORAGE_URL }}" >> $GITHUB_ENV
+            # Define Docker image name (with commit SHA) for staging
+            echo "IMAGE=us-docker.pkg.dev/${{ secrets.STAGING_GCP_PROJECT_ID }}/uhrp-storage/uhrp-storage:${GITHUB_SHA}" >> $GITHUB_ENV
+          fi
+        shell: bash
+        # Sets environment variables based on the current Git branch (master -> staging, production -> prod) using the secrets provided
+
+      - name: Generate Cloud Run service configuration
+        run: scripts/mkenv.sh $DEPLOY_ENV > service-config.yaml
+        shell: bash
+        # Runs the environment script to create a Cloud Run service configuration file (YAML) using the env vars above
+
+      - name: Build Docker image
+        run: docker build -t $IMAGE .
+        # Builds the Docker image for the UHRP Storage Server using the Dockerfile in the repository
+
+      - name: Configure Docker authentication
+        run: gcloud auth configure-docker us-docker.pkg.dev -q
+        # Authorizes Docker to push to Artifact Registry (configures Docker credential helper via gcloud)
+
+      - name: Push Docker image to Artifact Registry
+        run: docker push $IMAGE
+        # Pushes the built image to Google Artifact Registry (us-docker.pkg.dev/{PROJECT_ID}/uhrp-storage repository)
+
+      - name: Deploy to Cloud Run (staging)
+        if: github.ref == 'refs/heads/master'
+        uses: google-github-actions/deploy-cloudrun@v1
         with:
-          metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
+          service: staging-uhrp
+          project_id: ${{ secrets.STAGING_GCP_PROJECT_ID }}
+          region: us-central1
+          image: us-docker.pkg.dev/${{ secrets.STAGING_GCP_PROJECT_ID }}/uhrp-storage/uhrp-storage:${{ github.sha }}
+          env_vars_file: service-config.yaml
+        # Deploys to the *staging* Cloud Run service (staging-uhrp) using the image and config generated above
+
+      - name: Deploy to Cloud Run (production)
+        if: github.ref == 'refs/heads/production'
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: prod-uhrp
+          project_id: ${{ secrets.PROD_GCP_PROJECT_ID }}
+          region: us-central1
+          image: us-docker.pkg.dev/${{ secrets.PROD_GCP_PROJECT_ID }}/uhrp-storage/uhrp-storage:${{ github.sha }}
+          env_vars_file: service-config.yaml
+        # Deploys to the *production* Cloud Run service (prod-uhrp) using the image and config generated above
