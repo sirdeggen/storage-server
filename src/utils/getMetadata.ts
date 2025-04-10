@@ -35,6 +35,7 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
   })
 
   let objectIdentifier
+  // Farthest expiration time given in seconds
   let maxpiry = 0
   // Finding the identifier for the file with the maxpiry date
   for (const out of outputs) {
@@ -67,16 +68,13 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
     name,
     size,
     contentType = '',
-    customTime
   } = gcsMetadata
-
-  const expiryTime = Math.floor(new Date(customTime).getTime() / 1000)
 
   return {
     objectIdentifier,
     name,
     size,
     contentType,
-    expiryTime
+    expiryTime: maxpiry
   }
 }

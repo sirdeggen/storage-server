@@ -62,8 +62,9 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       expiryTime: prevExpiryTime
     } = await getMetadata(uhrpUrl, identityKey, limit, offset)
 
-    const newExpiryTimeMS = (prevExpiryTime * 1000) + (additionalMinutes * 60 * 1000)
-    const newCustomTimeIso = new Date(newExpiryTimeMS).toISOString()
+    // Convert to MS to create an ISO string
+    const newExpiryTimeSeconds = prevExpiryTime + (additionalMinutes * 60)
+    const newCustomTimeIso = new Date(newExpiryTimeSeconds * 1000).toISOString()
 
     const fileSizeNum = parseInt(size, 10) || 0
     let amount = 0
@@ -97,6 +98,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
 
     // Finding the maxpiry file with the same url
     let prevAdvertisement
+    // Farthest expiration time given in seconds
     let maxpiry = 0
     for (const out of outputs) {
       if (!out.tags) continue
@@ -120,9 +122,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
     }
 
     // Building the new action's locking script
-    const newExpiryTimeSeconds = Math.floor(newExpiryTimeMS / 1000)
     const hash = StorageUtils.getHashFromURL(uhrpUrl)
-
     const fields: number[][] = [
       Utils.toArray(SERVER_PRIVATE_KEY, 'hex'),
       hash,
@@ -201,7 +201,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
     return res.status(200).json({
       status: 'success',
       prevExpiryTime,
-      newExpiryTime: newExpiryTimeSeconds * 60,
+      newExpiryTime: newExpiryTimeSeconds,
       amount
     })
   } catch (error) {
@@ -224,8 +224,8 @@ export default {
   },
   exampleResponse: {
     status: 'success',
-    newExpiryTime: 28921659,
-    prevExpiryTime: 28921599,
+    newExpiryTime: 28921659000, // New expiry time in seconds
+    prevExpiryTime: 28921599000, // Previous expiry time in seconds
     amount: 42
   },
   errors: ['ERR_MISSING_FIELDS', 'ERR_NOT_FOUND', 'ERR_INTERNAL_RENEW'],
