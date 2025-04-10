@@ -16,7 +16,7 @@ interface FileMetadata {
 
 /**
  * Finds the 'objectIdentifier' by scanning the 'uhrp advertisements' basket
- * for a matching `uhrpUrl_{uhrpUrl}` tag, then fetches GCS metadata.
+ * for a matching `uhrp_url_{uhrpUrl}` tag, then fetches GCS metadata.
  *
  * @param uhrpUrl The UHRP URL
  * @returns {Promise<FileMetadata>} An object containing file info.
@@ -26,7 +26,7 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
     const wallet = await getWallet()
     const { outputs } = await wallet.listOutputs({
         basket: 'uhrp advertisements',
-        tags: [`uhrpUrl_${uhrpUrl}`, `uploaderIdentityKey_${uploaderIdentityKey}`],
+        tags: [`uhrp_url_${uhrpUrl}`, `uploader_identity_key_${uploaderIdentityKey}`],
         tagQueryMode: 'all',
         includeTags: true,
         limit: limit !== undefined ? limit : 200,
@@ -38,15 +38,15 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
     // Finding the identifier for the file with the maxpiry date
     for (const out of outputs) {
         if (!out.tags) continue
-        const objectIdTag = out.tags.find(t => t.startsWith('objectIdentifier_'))
-        const expiryTag = out.tags.find(t => t.startsWith('expiryTime_'))
+        const objectIdTag = out.tags.find(t => t.startsWith('object_identifier_'))
+        const expiryTag = out.tags.find(t => t.startsWith('expiry_time_'))
         if (!objectIdTag || !expiryTag) continue
         
-        const expiryNum = parseInt(expiryTag.substring('expiryTime_'.length), 10) || 0
+        const expiryNum = parseInt(expiryTag.substring('expiry_time_'.length), 10) || 0
         
         if (expiryNum > maxpiry) {
             maxpiry = expiryNum
-            objectIdentifier = objectIdTag.substring('objectIdentifier_'.length)
+            objectIdentifier = objectIdTag.substring('object_identifier_'.length)
         }
     }
 

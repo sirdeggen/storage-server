@@ -39,7 +39,7 @@ const listHandler = async (req: ListRequest, res: Response<ListResponse>) => {
 
         const { outputs } = await wallet.listOutputs({
             basket: 'uhrp advertisements',
-            tags: [`uploaderIdentityKey_${identityKey}`],
+            tags: [`uploader_identity_key_${identityKey}`],
             includeTags: true,
             limit,
             offset
@@ -49,15 +49,15 @@ const listHandler = async (req: ListRequest, res: Response<ListResponse>) => {
         for (const out of outputs) {
             if (!out.tags) continue
 
-            const uhrpUrlTag = out.tags.find(t => t.startsWith('uhrpUrl_'))
-            const expiryTimeTag = out.tags.find(t => t.startsWith('expiryTime_'))
+            const uhrpUrlTag = out.tags.find(t => t.startsWith('uhrp_url_'))
+            const expiryTimeTag = out.tags.find(t => t.startsWith('expiry_time_'))
 
             const uhrpUrl = uhrpUrlTag
-                ? uhrpUrlTag.substring('uhrpUrl_'.length)
+                ? uhrpUrlTag.substring('uhrp_url_'.length)
                 : ''
 
             const expiryTime = expiryTimeTag
-                ? parseInt(expiryTimeTag.substring('expiryTime_'.length), 10)
+                ? parseInt(expiryTimeTag.substring('expiry_time_'.length), 10)
                 : 0
 
             result.push({

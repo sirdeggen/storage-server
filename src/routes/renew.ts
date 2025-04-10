@@ -80,7 +80,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
         const wallet = await getWallet()
         const { outputs, BEEF,  } = await wallet.listOutputs({
             basket: 'uhrp advertisements',
-            tags: [`uhrpUrl_${uhrpUrl}`, `objectIdentifier_${objectIdentifier}`],
+            tags: [`uhrp_url_${uhrpUrl}`, `object_identifier_${objectIdentifier}`],
             tagQueryMode: 'all',
             includeTags: true,
             include: 'entire transactions',
@@ -101,10 +101,10 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
         let maxpiry = 0
         for (const out of outputs) {
             if (!out.tags) continue
-            const expiryTag = out.tags.find(t => t.startsWith('expiryTime_'))
+            const expiryTag = out.tags.find(t => t.startsWith('expiry_time_'))
             if (!expiryTag) continue
             
-            const expiryNum = parseInt(expiryTag.substring('expiryTime_'.length), 10) || 0
+            const expiryNum = parseInt(expiryTag.substring('expiry_time_'.length), 10) || 0
             
             if (expiryNum > maxpiry) {
                 maxpiry = expiryNum
@@ -144,12 +144,12 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
         // Creating new tags
         const newTags = []
         if (prevAdvertisement.tags) {
-            const uploaderTag = prevAdvertisement.tags.find(t => t.startsWith('uploaderIdentityKey_'))
+            const uploaderTag = prevAdvertisement.tags.find(t => t.startsWith('uploader_identity_key_'))
             if (uploaderTag) newTags.push(uploaderTag)
         }
-        newTags.push(`uhrpUrl_${uhrpUrl}`)
-        newTags.push(`objectIdentifier_${objectIdentifier}`)
-        newTags.push(`expiryTime_${newExpiryTimeSeconds}`)
+        newTags.push(`uhrp_url_${uhrpUrl}`)
+        newTags.push(`object_identifier_${objectIdentifier}`)
+        newTags.push(`expiry_time_${newExpiryTimeSeconds}`)
 
         const { signableTransaction } = await wallet.createAction({
             inputBEEF: BEEF,
