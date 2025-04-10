@@ -8,8 +8,8 @@ on:
 env:
   CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
   GCR_HOST: us-docker.pkg.dev
-  GOOGLE_PROJECT_ID: babbage-private
-  GCR_IMAGE_NAME: nanostore
+  GOOGLE_PROJECT_ID: babbage-uhrp
+  GCR_IMAGE_NAME: uhrp-storage
   
 jobs:
   build:
