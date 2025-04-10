@@ -74,7 +74,7 @@ export default async function createUHRPAdvertisement({
             satoshis: 1,
             basket: 'uhrp advertisements',
             outputDescription: 'UHRP advertisement token',
-            tags: [`uhrp_url_${uhrpURL}`, `object_identifier_${objectIdentifier}`, `uploader_identity_key_${uploaderIdentityKey}`, `expiry_time_${expiryTimeSeconds}`]
+            tags: [`uhrp_url_${Utils.toHex(Utils.toArray(uhrpURL, 'utf8'))}`, `object_identifier_${Utils.toHex(Utils.toArray(objectIdentifier, 'utf8'))}`, `uploader_identity_key_${uploaderIdentityKey}`, `expiry_time_${expiryTimeSeconds}`]
         }],
         description: 'UHRP Content Availability Advertisement'
     })

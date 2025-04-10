@@ -1,6 +1,7 @@
 import { Storage } from '@google-cloud/storage'
 import { Request, Response } from 'express'
 import { getWallet } from '../utils/walletSingleton'
+import { Utils } from '@bsv/sdk'
 
 interface ListRequest extends Request {
     auth: {
@@ -53,7 +54,7 @@ const listHandler = async (req: ListRequest, res: Response<ListResponse>) => {
             const expiryTimeTag = out.tags.find(t => t.startsWith('expiry_time_'))
 
             const uhrpUrl = uhrpUrlTag
-                ? uhrpUrlTag.substring('uhrp_url_'.length)
+                ? Utils.toUTF8(Utils.toArray(uhrpUrlTag.substring('uhrp_url_'.length), 'hex'))
                 : ''
 
             const expiryTime = expiryTimeTag

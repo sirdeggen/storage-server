@@ -80,7 +80,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
         const wallet = await getWallet()
         const { outputs, BEEF,  } = await wallet.listOutputs({
             basket: 'uhrp advertisements',
-            tags: [`uhrp_url_${uhrpUrl}`, `object_identifier_${objectIdentifier}`],
+            tags: [`uhrp_url_${Utils.toHex(Utils.toArray(uhrpUrl, 'utf8'))}`, `object_identifier_${Utils.toHex(Utils.toArray(objectIdentifier, 'utf8'))}`],
             tagQueryMode: 'all',
             includeTags: true,
             include: 'entire transactions',
@@ -147,20 +147,17 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
             const uploaderTag = prevAdvertisement.tags.find(t => t.startsWith('uploader_identity_key_'))
             if (uploaderTag) newTags.push(uploaderTag)
         }
-        newTags.push(`uhrp_url_${uhrpUrl}`)
-        newTags.push(`object_identifier_${objectIdentifier}`)
+        newTags.push(`uhrp_url_${Utils.toHex(Utils.toArray(uhrpUrl, 'utf8'))}`)
+        newTags.push(`object_identifier_${Utils.toHex(Utils.toArray(objectIdentifier, 'utf8'))}`)
         newTags.push(`expiry_time_${newExpiryTimeSeconds}`)
 
         const { signableTransaction } = await wallet.createAction({
             inputBEEF: BEEF,
-            inputs: [
-                {
-                    outpoint: prevAdvertisement.outpoint,
-                    unlockingScriptLength: 74,
-                    inputDescription: 'Redeeming old advertisement'
-                }
-
-            ],
+            inputs: [{
+                outpoint: prevAdvertisement.outpoint,
+                unlockingScriptLength: 74,
+                inputDescription: 'Redeeming old advertisement'
+            }],
             outputs: [{
                 lockingScript: newLockingScript.toHex(),
                 satoshis: 1,

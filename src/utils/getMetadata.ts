@@ -2,6 +2,7 @@
 import { Storage } from '@google-cloud/storage'
 import { getWallet } from './walletSingleton'
 import upload from '../routes/upload'
+import { Utils } from '@bsv/sdk'
 
 const storage = new Storage()
 const { GCP_BUCKET_NAME } = process.env
@@ -26,7 +27,7 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
     const wallet = await getWallet()
     const { outputs } = await wallet.listOutputs({
         basket: 'uhrp advertisements',
-        tags: [`uhrp_url_${uhrpUrl}`, `uploader_identity_key_${uploaderIdentityKey}`],
+        tags: [`uhrp_url_${Utils.toHex(Utils.toArray(uhrpUrl, 'utf8'))}`, `uploader_identity_key_${uploaderIdentityKey}`],
         tagQueryMode: 'all',
         includeTags: true,
         limit: limit !== undefined ? limit : 200,
