@@ -7,7 +7,7 @@ on:
 
 env:
   CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
-  GCR_HOST: us.gcr.io
+  GCR_HOST: us-docker.pkg.dev
   GOOGLE_PROJECT_ID: babbage-private
   GCR_IMAGE_NAME: nanostore
   
