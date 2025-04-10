@@ -55,6 +55,10 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
     throw new Error(`No advertisement found for uhrpUrl: ${uhrpUrl} uploaderIdentityKey: ${uploaderIdentityKey}`)
   }
 
+  if (Date.now() > maxpiry * 1000) {
+    throw new Error(`Advertisement for uhrpUrl: ${uhrpUrl} has expired`)
+  }
+
   // Fetch GCS metadata
   const file = storage.bucket(GCP_BUCKET_NAME!).file(`cdn/${objectIdentifier}`)
   const [gcsMetadata] = await file.getMetadata()
