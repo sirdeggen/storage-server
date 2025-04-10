@@ -4,7 +4,7 @@ echo "Creating $1"
 echo "apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: $SERVICE_NAME
+  name: $SERVICE
 spec:
   template:
     spec:
@@ -18,23 +18,21 @@ spec:
 
 echo "Appending environment variables to $1"
 perl -E'
-  for (@ARGV) {
-    my $val = $ENV{$_} // "";
-    $val =~ s/\\/\\\\/g;      # escape backslashes
-    $val =~ s/\n/\\n/g;       # escape newlines
-    $val =~ s/"/\\"/g;        # escape double quotes
-    say "        - name: $_\n          value: \"$val\"";
-  }
+  say "        - name: $_
+          value: \x27$ENV{$_}\x27" for @ARGV;
 ' NODE_ENV \
-  PRICE_PER_GB_MO \
-  MIN_HOSTING_MINUTES \
-  HOSTING_DOMAIN \
-  ADMIN_TOKEN \
-  SERVER_PRIVATE_KEY \
-  GCP_STORAGE_CREDS \
-  GCP_PROJECT_ID \
-  GCP_BUCKET_NAME \
-  HTTP_PORT >> $1
+    PRICE_PER_GB_MO \
+    MIN_HOSTING_MINUTES \
+    HOSTING_DOMAIN \
+    ADMIN_TOKEN \
+    SERVER_PRIVATE_KEY \
+    GCP_STORAGE_CREDS \
+    GCP_PROJECT_ID \
+    GCP__NAME \
+    GCP_BUCKET_NAME \
+    WALLET_STORAGE_URL \
+    BSV_NETWORK \
+    HTTP_PORT >> $1
 
 echo "Built! Contents of $1:"
 cat $1
