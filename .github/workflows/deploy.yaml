@@ -28,7 +28,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_STORAGE_CREDS }}
           # Authenticates with GCP using the service account JSON credentials (stored in a GitHub secret)
 
       - name: Set environment variables for deployment
@@ -94,20 +94,12 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-          service: staging-uhrp
-          project_id: ${{ secrets.STAGING_GCP_PROJECT_ID }}
-          region: us-central1
-          image: us-docker.pkg.dev/${{ secrets.STAGING_GCP_PROJECT_ID }}/uhrp-storage/uhrp-storage:${{ github.sha }}
-          env_vars_file: service-config.yaml
+          metadata: service-config.yaml
         # Deploys to the *staging* Cloud Run service (staging-uhrp) using the image and config generated above
 
       - name: Deploy to Cloud Run (production)
         if: github.ref == 'refs/heads/production'
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-          service: prod-uhrp
-          project_id: ${{ secrets.PROD_GCP_PROJECT_ID }}
-          region: us-central1
-          image: us-docker.pkg.dev/${{ secrets.PROD_GCP_PROJECT_ID }}/uhrp-storage/uhrp-storage:${{ github.sha }}
-          env_vars_file: service-config.yaml
+          metadata: service-config.yaml
         # Deploys to the *production* Cloud Run service (prod-uhrp) using the image and config generated above
