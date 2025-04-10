@@ -4,7 +4,7 @@ echo "Creating $1"
 echo "apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: $SERVICE
+  name: $SERVICE_NAME
 spec:
   template:
     spec:
