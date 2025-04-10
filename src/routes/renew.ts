@@ -62,8 +62,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       expiryTime: prevExpiryTime
     } = await getMetadata(uhrpUrl, identityKey, limit, offset)
 
-    const newExpiryTime = (prevExpiryTime * 60) + additionalMinutes
-    const newExpiryTimeMS = newExpiryTime * 60 * 1000
+    const newExpiryTimeMS = (prevExpiryTime * 1000) + (additionalMinutes * 60 * 1000)
     const newCustomTimeIso = new Date(newExpiryTimeMS).toISOString()
 
     const fileSizeNum = parseInt(size, 10) || 0
@@ -202,7 +201,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
     return res.status(200).json({
       status: 'success',
       prevExpiryTime,
-      newExpiryTime,
+      newExpiryTime: newExpiryTimeSeconds * 60,
       amount
     })
   } catch (error) {
