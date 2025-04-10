@@ -7,7 +7,7 @@ on:
 
 env:
   CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
-  GCR_HOST: us.gcr.io
+  GCR_HOST: us-docker.pkg.dev
   GOOGLE_PROJECT_ID: babbage-uhrp
   GCR_IMAGE_NAME: uhrp-storage
   
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: RafikFarhad/push-to-gcr-github-action@v5-beta
+      - uses: RafikFarhad/push-to-gcr-github-action@v5
         with:
           gcloud_service_key: ${{ secrets.DOCKER_REGISTRY_PUSH_KEY }}
           registry: ${{ env.GCR_HOST }}
