@@ -10,13 +10,9 @@ import { getWallet } from './utils/walletSingleton'
 import routes from './routes'
 import getPriceForFile from './utils/getPriceForFile'
 import { getMetadata } from './utils/getMetadata'
-// import { Setup } from '@bsv/wallet-toolbox'
 
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
 const HTTP_PORT = process.env.HTTP_PORT || 8080
-const BSV_NETWORK = process.env.BSV_NETWORK as 'mainnet' | 'testnet'
-const WALLET_STORAGE_URL = process.env.WALLET_STORAGE_URL as string
-const GCP_BUCKET_NAME = process.env.GCP_BUCKET_NAME as string
 
 const app = express()
 app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
@@ -98,17 +94,9 @@ preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
   // Auth is enforced from here forward
   ; (async () => {
     const wallet = await getWallet()
-    // const wallet = await Setup.createWalletClientNoEnv({
-    //   chain: BSV_NETWORK === 'mainnet' ? 'main' : 'test',
-    //   rootKeyHex: SERVER_PRIVATE_KEY,
-    //   storageUrl: WALLET_STORAGE_URL
-    // })
-
     const authMiddleware = createAuthMiddleware({
       wallet,
-      allowUnauthenticated: false,
-      logger: console,
-      logLevel: 'debug'
+      allowUnauthenticated: false
     })
 
     const paymentMiddleware = createPaymentMiddleware({

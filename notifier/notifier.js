@@ -40,7 +40,7 @@ exports.notifier = (file, context) => {
       console.log('File metadata', metadata);
       let uploaderIdentityKey = ''
       if (typeof metadata.metadata === 'object') {
-        uploaderIdentityKey = metadata.uploaderidentitykey;
+        uploaderIdentityKey = metadata.metadata.uploaderidentitykey;
       }
       const expiryTime = Math.round(new Date(metadata.customTime).getTime() / 1000);
       const digest = crypto.createHash('sha256')
