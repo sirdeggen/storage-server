@@ -47,7 +47,7 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
         
         if (expiryNum > maxpiry) {
             maxpiry = expiryNum
-            objectIdentifier = objectIdTag.substring('object_identifier_'.length)
+            objectIdentifier = Utils.toUTF8(Utils.toArray(objectIdTag.substring('object_identifier_'.length), 'hex'))
         }
     }
 
