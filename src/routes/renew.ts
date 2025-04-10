@@ -122,8 +122,9 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       })
     }
 
-    const parsedTx = Transaction.fromAtomicBEEF(BEEF)
-    const prevLockingScript = parsedTx.outputs[Number(prevAdvertisement.outpoint.split('.')[1])].lockingScript
+    const [prevTxid, outputIndex] = prevAdvertisement.outpoint.split('.')
+    const parsedTx = Transaction.fromBEEF(BEEF, prevTxid)
+    const prevLockingScript = parsedTx.outputs[Number(outputIndex)].lockingScript
     const { fields: prevFields } = PushDrop.decode(prevLockingScript)
 
     // Building the new action's locking script
