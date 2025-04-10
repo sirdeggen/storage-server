@@ -70,7 +70,7 @@ export async function getMetadata(uhrpUrl: string, uploaderIdentityKey: string, 
     customTime
   } = gcsMetadata
 
-  const expiryTime = Math.floor(new Date(customTime).getTime() * 1000)
+  const expiryTime = Math.floor(new Date(customTime).getTime())
 
   return {
     objectIdentifier,
