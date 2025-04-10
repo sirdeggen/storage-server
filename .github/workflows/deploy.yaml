@@ -31,7 +31,7 @@ jobs:
           SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'prod-uhrp' || 'staging-uhrp' }}
           NODE_ENV:     ${{ env.CURRENT_BRANCH =='production' && secrets.PROD_NODE_ENV || secrets.STAGING_NODE_ENV }}
           HOSTING_DOMAIN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HOSTING_DOMAIN || secrets.STAGING_HOSTING_DOMAIN }}
-          MIGRATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIGRATE_KEY || secrets.STAGING_MIGRATE_KEY }}
+#          MIGRATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIGRATE_KEY || secrets.STAGING_MIGRATE_KEY }}
           PRICE_PER_GB_MO: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_PRICE_PER_GB_MO || secrets.STAGING_PRICE_PER_GB_MO }}
           GCP_STORAGE_CREDS: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_STORAGE_CREDS || secrets.STAGING_GCP_STORAGE_CREDS }}
           GCP_BUCKET_NAME: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_BUCKET_NAME || secrets.STAGING_GCP_BUCKET_NAME }}
