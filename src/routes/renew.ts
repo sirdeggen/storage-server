@@ -2,12 +2,13 @@ import { Request, Response } from 'express'
 import { Storage } from '@google-cloud/storage'
 import getPriceForFile from '../utils/getPriceForFile'
 import { getWallet } from '../utils/walletSingleton'
-import { PushDrop, StorageUtils, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
+import { PushDrop, SHIPBroadcaster, StorageUtils, TopicBroadcaster, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
 import { getMetadata } from '../utils/getMetadata'
 
 const storage = new Storage()
 const GCP_BUCKET_NAME = process.env.GCP_BUCKET_NAME as string
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
+const BSV_NETWORK = process.env.BSV_NETWORK as 'mainnet' | 'testnet'
 
 interface RenewRequest extends Request {
   auth: {
@@ -176,9 +177,9 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
     }
 
     const unlocker = pushdrop.unlock([2, 'uhrp advertisement'], '1', 'anyone')
-    const tx = Transaction.fromAtomicBEEF(signableTransaction.tx)
-    const unlockingScript = await unlocker.sign(tx, 0)
-    const { txid } = await wallet.signAction({
+    const partialTx = Transaction.fromAtomicBEEF(signableTransaction.tx)
+    const unlockingScript = await unlocker.sign(partialTx, 0)
+    const { tx, txid } = await wallet.signAction({
       reference: signableTransaction.reference,
       spends:
       {
@@ -187,12 +188,18 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
         }
       }
     })
-    if (!txid) {
+    if (!txid || !tx) {
       return res.status(400).json({
         status: 'error',
         code: 'ERR_SIGNING_OLD_ADVERTISEMENT'
       })
     }
+
+    const broadcaster = new SHIPBroadcaster(['tm_uhrp'], {
+      networkPreset: BSV_NETWORK
+    })
+
+    await broadcaster.broadcast(Transaction.fromAtomicBEEF(tx))
 
     // Setting the new expiry time in the actual database
     await storage.bucket(GCP_BUCKET_NAME).file(`cdn/${objectIdentifier}`)
