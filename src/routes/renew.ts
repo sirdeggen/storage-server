@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { Storage } from '@google-cloud/storage'
 import getPriceForFile from '../utils/getPriceForFile'
 import { getWallet } from '../utils/walletSingleton'
-import { PrivateKey, PushDrop, SHIPBroadcaster, StorageUtils, TopicBroadcaster, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
+import { LockingScript, PrivateKey, PushDrop, SHIPBroadcaster, StorageUtils, TopicBroadcaster, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
 import { getMetadata } from '../utils/getMetadata'
 
 const storage = new Storage()
@@ -114,7 +114,7 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       }
     }
 
-    if (!prevAdvertisement) {
+    if (!prevAdvertisement || !prevAdvertisement.lockingScript) {
       return res.status(404).json({
         status: 'error',
         code: 'ERR_OLD_ADVERTISEMENT_NOT_FOUND',
@@ -122,17 +122,16 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       })
     }
 
-    const key = PrivateKey.fromHex(SERVER_PRIVATE_KEY)
-    const serverPublicKey = key.toPublicKey().toString()
+    const { fields: prevFields } = PushDrop.decode(LockingScript.fromHex(prevAdvertisement.lockingScript))
 
     // Building the new action's locking script
     const hash = StorageUtils.getHashFromURL(uhrpUrl)
     const fields: number[][] = [
-      Utils.toArray(serverPublicKey, 'hex'),
-      hash,
-      Utils.toArray(uhrpUrl, 'utf8'),
+      prevFields[0],
+      prevFields[1],
+      prevFields[2],
       new Utils.Writer().writeVarIntNum(newExpiryTimeSeconds).toArray(),
-      new Utils.Writer().writeVarIntNum(fileSizeNum).toArray()
+      prevFields[4]
     ]
 
     const pushdrop = new PushDrop(wallet)
@@ -168,7 +167,10 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
         outputDescription: 'UHRP advertisement token (renewed)',
         tags: newTags
       }],
-      description: `Renew advertisement for uhrpUrl ${uhrpUrl}`
+      description: `Renew advertisement for uhrpUrl ${uhrpUrl}`,
+      options: {
+        randomizeOutputs: false
+      }
     })
 
     if (!signableTransaction) {
