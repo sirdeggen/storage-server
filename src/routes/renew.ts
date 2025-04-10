@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { Storage } from '@google-cloud/storage'
 import getPriceForFile from '../utils/getPriceForFile'
 import { getWallet } from '../utils/walletSingleton'
-import { PushDrop, SHIPBroadcaster, StorageUtils, TopicBroadcaster, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
+import { PrivateKey, PushDrop, SHIPBroadcaster, StorageUtils, TopicBroadcaster, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
 import { getMetadata } from '../utils/getMetadata'
 
 const storage = new Storage()
@@ -122,10 +122,13 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       })
     }
 
+    const key = PrivateKey.fromHex(SERVER_PRIVATE_KEY)
+    const serverPublicKey = key.toPublicKey().toString()
+
     // Building the new action's locking script
     const hash = StorageUtils.getHashFromURL(uhrpUrl)
     const fields: number[][] = [
-      Utils.toArray(SERVER_PRIVATE_KEY, 'hex'),
+      Utils.toArray(serverPublicKey, 'hex'),
       hash,
       Utils.toArray(uhrpUrl, 'utf8'),
       new Utils.Writer().writeVarIntNum(newExpiryTimeSeconds).toArray(),
