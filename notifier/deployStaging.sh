@@ -1,2 +1,2 @@
 #!/bin/bash
-gcloud functions deploy stagingNotifier --gen2 --runtime=nodejs22 --env-vars-file=staging.functions.env.yaml --entry-point=notifier --timeout=540 --trigger-event=google.storage.object.finalize --trigger-resource=staging-uhrp.babbage.systems --memory=4096 --source .
+gcloud functions deploy stagingNotifier --gen2 --runtime=nodejs22 --env-vars-file=staging.functions.env.yaml --entry-point=notifier --timeout=540 --region=us-central1 --trigger-event=google.storage.object.finalize --trigger-resource=staging-uhrp.babbage.systems --memory=4096 --source .
