@@ -25,7 +25,7 @@ jobs:
           image_name: ${{ env.GCR_IMAGE_NAME }}
           image_tag: ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
       - name: "Create service description file"
-        run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml"
+        run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml ${{ env.CURRENT_BRANCH =='production' && 'prod' || 'staging' }}.functions.env.yaml"
         env:
           IMAGE: "${{ env.GCR_HOST }}/${{ env.GOOGLE_PROJECT_ID }}/${{ env.GCR_IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}"
           SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'prod-nanostore' || 'staging-nanostore' }}
@@ -48,3 +48,5 @@ jobs:
       - uses: google-github-actions/deploy-cloudrun@v1
         with:
           metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
+      - name: "Deploy the notifier function"
+        run: "./notifier/deploy${{ env.CURRENT_BRANCH =='production' && 'Prod' || 'Staging' }}.sh

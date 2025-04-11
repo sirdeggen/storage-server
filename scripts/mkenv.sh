@@ -36,3 +36,8 @@ perl -E'
 
 echo "Built! Contents of $1:"
 cat $1
+
+echo "HOSTING_DOMAIN: $HOSTING_DOMAIN" >> $2
+echo "ADMIN_TOKEN: $ADMIN_TOKEN" >> $2
+echo "Built! Contents of $2:"
+cat $2
