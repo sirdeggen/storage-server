@@ -42,6 +42,7 @@ const listHandler = async (req: ListRequest, res: Response<ListResponse>) => {
       basket: 'uhrp advertisements',
       tags: [`uploader_identity_key_${identityKey}`],
       includeTags: true,
+      tagQueryMode: 'all',
       limit,
       offset
     })
