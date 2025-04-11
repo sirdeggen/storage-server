@@ -28,6 +28,13 @@ interface UploadResponse {
 
 export async function uploadHandler(req: UploadRequest, res: Response<UploadResponse>) {
     try {
+        if (!req.auth.identityKey) {
+            return res.status(400).json({
+                status: 'error',
+                code: 'ERR_MISSING_IDENTITY_KEY',
+                description: 'Missing authfetch identityKey.'
+            })
+        }
         const { fileSize, retentionPeriod } = req.body
 
         if (!fileSize || !Number.isInteger(fileSize) || fileSize <= 0) {

@@ -9,12 +9,10 @@ import { createPaymentMiddleware } from '@bsv/payment-express-middleware'
 import { getWallet } from './utils/walletSingleton'
 import routes from './routes'
 import getPriceForFile from './utils/getPriceForFile'
-// import { Setup } from '@bsv/wallet-toolbox'
+import { getMetadata } from './utils/getMetadata'
 
 const SERVER_PRIVATE_KEY = process.env.SERVER_PRIVATE_KEY as string
 const HTTP_PORT = process.env.HTTP_PORT || 8080
-const BSV_NETWORK = process.env.BSV_NETWORK as 'mainnet' | 'testnet'
-const WALLET_STORAGE_URL = process.env.WALLET_STORAGE_URL as string
 
 const app = express()
 app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
@@ -96,17 +94,9 @@ preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
   // Auth is enforced from here forward
   ; (async () => {
     const wallet = await getWallet()
-    // const wallet = await Setup.createWalletClientNoEnv({
-    //   chain: BSV_NETWORK === 'mainnet' ? 'main' : 'test',
-    //   rootKeyHex: SERVER_PRIVATE_KEY,
-    //   storageUrl: WALLET_STORAGE_URL
-    // })
-
     const authMiddleware = createAuthMiddleware({
       wallet,
-      allowUnauthenticated: false,
-      logger: console,
-      logLevel: 'debug'
+      allowUnauthenticated: false
     })
 
     const paymentMiddleware = createPaymentMiddleware({
@@ -115,6 +105,7 @@ preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
 
         if (req.url === '/upload') {
           const { fileSize, retentionPeriod } = (req.body as any) || {}
+          if (!fileSize || !retentionPeriod) return 0
           try {
             const satoshis = await getPriceForFile({ fileSize: +fileSize, retentionPeriod: +retentionPeriod })
             return satoshis
@@ -122,6 +113,18 @@ preAuthRoutes.filter(route => !(route as any).unsecured).forEach((route) => {
             return 0
           }
         }
+        if (req.url === '/renew') {
+          const { uhrpUrl, additionalMinutes } = (req.body as any) || {}
+          if (!uhrpUrl || !additionalMinutes) return 0
+          try {
+            const { size } = await getMetadata(uhrpUrl, (req as any).auth.identityKey)
+            const satoshis = await getPriceForFile({ fileSize: +size, retentionPeriod: +additionalMinutes })
+            return satoshis
+          } catch (e) {
+            return 0
+          }
+        }
+
         return 0
       }
     })

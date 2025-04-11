@@ -37,7 +37,11 @@ exports.notifier = (file, context) => {
     try {
       const storageFile = storage.bucket(file.bucket).file(file.name)
       const [metadata] = await storageFile.getMetadata();
-      const uploaderIdentityKey = metadata.uploaderIdentityKey;
+      console.log('File metadata', metadata);
+      let uploaderIdentityKey = ''
+      if (typeof metadata.metadata === 'object') {
+        uploaderIdentityKey = metadata.metadata.uploaderidentitykey;
+      }
       const expiryTime = Math.round(new Date(metadata.customTime).getTime() / 1000);
       const digest = crypto.createHash('sha256')
       const fileStream = storageFile.createReadStream()

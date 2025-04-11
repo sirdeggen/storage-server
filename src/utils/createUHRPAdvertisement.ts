@@ -10,6 +10,7 @@ export interface AdvertisementParams {
     hash: number[]
     objectIdentifier: string
     expiryTime: number
+    uploaderIdentityKey: string
     url: string
     contentLength: number
     confederacyHost?: string
@@ -24,6 +25,7 @@ export default async function createUHRPAdvertisement({
     objectIdentifier,
     expiryTime,
     url,
+    uploaderIdentityKey,
     contentLength
 }: AdvertisementParams): Promise<AdvertisementResponse> {
     if (typeof hash === 'string') {
@@ -70,8 +72,9 @@ export default async function createUHRPAdvertisement({
         outputs: [{
             lockingScript: lockingScript.toHex(),
             satoshis: 1,
+            basket: 'uhrp advertisements',
             outputDescription: 'UHRP advertisement token',
-            tags: [`uhrp-url_${uhrpURL}`, `objectIdentifier_${objectIdentifier}`]
+            tags: [`uhrp_url_${Utils.toHex(Utils.toArray(uhrpURL, 'utf8'))}`, `object_identifier_${Utils.toHex(Utils.toArray(objectIdentifier, 'utf8'))}`, `uploader_identity_key_${uploaderIdentityKey}`, `expiry_time_${expiryTimeSeconds}`]
         }],
         description: 'UHRP Content Availability Advertisement'
     })
