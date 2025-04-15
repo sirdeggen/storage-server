@@ -7,9 +7,6 @@ on:
 
 env:
   CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
-  GCR_HOST: us-docker.pkg.dev
-  GOOGLE_PROJECT_ID: babbage-uhrp
-  GCR_IMAGE_NAME: uhrp/uhrp-storage
   
 jobs:
   build:
@@ -20,12 +17,12 @@ jobs:
       - uses: RafikFarhad/push-to-gcr-github-action@v5-beta
         with:
           gcloud_service_key: ${{ secrets.DOCKER_REGISTRY_PUSH_KEY }}
-          registry: ${{ env.GCR_HOST }}
-          project_id: ${{ env.GOOGLE_PROJECT_ID }}
-          image_name: ${{ env.GCR_IMAGE_NAME }}
+          registry: ${{ secrets.GCR_HOST }}
+          project_id: ${{ secrets.GOOGLE_PROJECT_ID }}
+          image_name: ${{ secrets.GCR_IMAGE_NAME }}
           image_tag: ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
       - name: "Create service description file"
-        run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml ./notifier/${{ env.CURRENT_BRANCH =='production' && 'prod' || 'staging' }}.functions.env.yaml"
+        run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml ./no${{ env.CURRENT_BRANCH =='production' && 'prod' || 'staging' }}.functions.env.yaml"
         env:
           IMAGE: "${{ env.GCR_HOST }}/${{ env.GOOGLE_PROJECT_ID }}/${{ env.GCR_IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}"
           SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'prod-nanostore' || 'staging-nanostore' }}
