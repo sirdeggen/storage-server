@@ -7,6 +7,9 @@ on:
 
 env:
   CURRENT_BRANCH: ${{ github.ref_name =='production' && 'production' || 'master' }}
+  GCR_HOST: ${{ secrets.GCR_HOST }}
+  GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+  GCR_IMAGE_NAME: ${{ secrets.GCR_IMAGE_NAME }}
   
 jobs:
   build:
@@ -17,9 +20,9 @@ jobs:
       - uses: RafikFarhad/push-to-gcr-github-action@v5-beta
         with:
           gcloud_service_key: ${{ secrets.DOCKER_REGISTRY_PUSH_KEY }}
-          registry: ${{ secrets.GCR_HOST }}
-          project_id: ${{ secrets.GOOGLE_PROJECT_ID }}
-          image_name: ${{ secrets.GCR_IMAGE_NAME }}
+          registry: ${{ env.GCR_HOST }}
+          project_id: ${{ env.GOOGLE_PROJECT_ID }}
+          image_name: ${{ env.GCR_IMAGE_NAME }}
           image_tag: ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
       - name: "Create service description file"
         run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml ./no${{ env.CURRENT_BRANCH =='production' && 'prod' || 'staging' }}.functions.env.yaml"
