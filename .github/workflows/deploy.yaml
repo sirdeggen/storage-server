@@ -25,6 +25,7 @@ jobs:
           project_id: ${{ env.GOOGLE_PROJECT_ID }}
           image_name: ${{ env.GCR_IMAGE_NAME }}
           image_tag: ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
+          decode_base64: false
       - name: "Create service description file"
         run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml ./notifier/${{ env.CURRENT_BRANCH =='production' && 'prod' || 'staging' }}.functions.env.yaml"
         env:
