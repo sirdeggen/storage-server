@@ -49,4 +49,4 @@ jobs:
         with:
           metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
       - name: "Deploy the notifier function"
-        run: "cd notifier && ./deploy${{ env.CURRENT_BRANCH =='production' && 'Prod' || 'Staging' }}.sh"
+        run: cd notifier && ./deploy${{ env.CURRENT_BRANCH =='production' && 'Prod' || 'Staging' }}.sh ${{ SECRETS.GCP_BUCKET_NAME }}
