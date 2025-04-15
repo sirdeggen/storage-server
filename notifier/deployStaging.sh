@@ -12,7 +12,7 @@ gcloud functions deploy stagingNotifier \
     --env-vars-file=staging.functions.env.yaml \
     --entry-point=notifier \
     --timeout=540 \
-    --region=$BUCKET_REGION \
+    --region=$(echo "$BUCKET_REGION" | tr '[:upper:]' '[:lower:]') \
     --trigger-event=google.storage.object.finalize \
     --trigger-resource=$GCP_BUCKET_NAME \
     --memory=4096 \
