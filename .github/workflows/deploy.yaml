@@ -26,11 +26,12 @@ jobs:
           image_name: ${{ env.GCR_IMAGE_NAME }}
           image_tag: ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
       - name: "Create service description file"
+      - run: echo "Image path: $GCR_HOST/$GOOGLE_PROJECT_ID/$GCR_IMAGE_NAME:$CURRENT_BRANCH-$GITHUB_SHA"
         run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml ./notifier/${{ env.CURRENT_BRANCH =='production' && 'prod' || 'staging' }}.functions.env.yaml"
         env:
           IMAGE: "${{ env.GCR_HOST }}/${{ env.GOOGLE_PROJECT_ID }}/${{ env.GCR_IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}"
           SERVICE: ${{ env.CURRENT_BRANCH =='production' && 'prod-nanostore' || 'staging-nanostore' }}
-          NODE_ENV:     ${{ env.CURRENT_BRANCH =='production' && secrets.PROD_NODE_ENV || secrets.STAGING_NODE_ENV }}
+          NODE_ENV: ${{ env.CURRENT_BRANCH =='production' && secrets.PROD_NODE_ENV || secrets.STAGING_NODE_ENV }}
           HOSTING_DOMAIN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HOSTING_DOMAIN || secrets.STAGING_HOSTING_DOMAIN }}
           MIGRATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIGRATE_KEY || secrets.STAGING_MIGRATE_KEY }}
           PRICE_PER_GB_MO: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_PRICE_PER_GB_MO || secrets.STAGING_PRICE_PER_GB_MO }}
