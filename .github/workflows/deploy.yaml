@@ -44,10 +44,12 @@ jobs:
           BSV_NETWORK: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_BSV_NETWORK || secrets.STAGING_BSV_NETWORK }}
           HTTP_PORT: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HTTP_PORT || secrets.STAGING_HTTP_PORT }}
       - name: "Deploy to Cloud Run"
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.gcp_deploy_creds }}
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
-
       - name: "Deploy the notifier function"
         run: |
           cd notifier 
