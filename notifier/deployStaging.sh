@@ -1,6 +1,5 @@
 #!/bin/bash
-echo $GCP_BUCKET_NAME
-
+GCP_BUCKET_NAME=$1
 gcloud functions deploy stagingNotifier \
     --gen2 \
     --runtime=nodejs22 \

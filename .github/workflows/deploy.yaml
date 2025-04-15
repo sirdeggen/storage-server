@@ -10,6 +10,7 @@ env:
   GCR_HOST: ${{ secrets.GCR_HOST }}
   GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
   GCR_IMAGE_NAME: ${{ secrets.GCR_IMAGE_NAME }}
+  GCP_BUCKET_NAME: ${{ github.ref_name == 'production' && secrets.PROD_GCP_BUCKET_NAME || secrets.STAGING_GCP_BUCKET_NAME }}
   
 jobs:
   build:
@@ -49,4 +50,6 @@ jobs:
         with:
           metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
       - name: "Deploy the notifier function"
-        run: cd notifier && ./deploy${{ env.CURRENT_BRANCH =='production' && 'Prod' || 'Staging' }}.sh ${{ secrets.GCP_BUCKET_NAME }}
+        run: |
+          cd notifier 
+          ./deploy${{ env.CURRENT_BRANCH =='production' && 'Prod' || 'Staging' }}.sh ${{ env.GCP_BUCKET_NAME }}
