@@ -43,12 +43,6 @@ jobs:
           WALLET_STORAGE_URL: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_WALLET_STORAGE_URL || secrets.STAGING_WALLET_STORAGE_URL }}
           BSV_NETWORK: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_BSV_NETWORK || secrets.STAGING_BSV_NETWORK }}
           HTTP_PORT: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HTTP_PORT || secrets.STAGING_HTTP_PORT }}
-
-      - name: "Authenticate with GCP using raw JSON"
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ github.ref_name == 'production' && secrets.PROD_GCP_STORAGE_CREDS || secrets.STAGING_GCP_STORAGE_CREDS }}
-
       - name: "Deploy to Cloud Run"
         uses: google-github-actions/deploy-cloudrun@v1
         with:
