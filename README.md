@@ -70,7 +70,7 @@ Only required for the few shell commands shown below. Everything else uses the C
     gsutil cors set bucket-cors-config.json gs://<BUCKET_NAME>
     ```
     
-    `bucket-cors-config.json` is provided in the repo root; edit it if you need to restrict origins.
+`bucket-cors-config.json` is provided in the repo root; edit it if you need to restrict origins.
     
 
 ### 2.2 Enable required APIs
@@ -222,7 +222,7 @@ Every push to **`master`** triggers the staging deployment. A push to **`product
       --role="roles/run.invoker"
     ```
     
-    Replace `<SERVICE_NAME>` with the Cloud Run service name and `<REGION>` with your region (e.g., `us‑west1`). After a minute, loading the service URL should return a JSON status instead of 403.
+Replace `<SERVICE_NAME>` with the Cloud Run service name and `<REGION>` with your region (e.g., `us‑west1`). After a minute, loading the service URL should return a JSON status instead of 403.
 
 ----------
 
