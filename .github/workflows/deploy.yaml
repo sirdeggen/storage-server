@@ -29,7 +29,7 @@ jobs:
         run: "./scripts/mkenv.sh service.${{ env.CURRENT_BRANCH }}.yaml ./notifier/${{ env.CURRENT_BRANCH == 'production' && 'prod' || 'staging' }}.functions.env.yaml"
         env:
           IMAGE: "${{ env.GCR_HOST }}/${{ env.GOOGLE_PROJECT_ID }}/${{ env.GCR_IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}"
-          SERVICE: ${{ env.CURRENT_BRANCH == 'production' && 'prod-nanostore' || 'staging-nanostore' }}
+          SERVICE: ${{ env.CURRENT_BRANCH == 'production' && 'prod-uhrp' || 'staging-uhrp' }}
           NODE_ENV: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_NODE_ENV || secrets.STAGING_NODE_ENV }}
           HOSTING_DOMAIN: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HOSTING_DOMAIN || secrets.STAGING_HOSTING_DOMAIN }}
           MIGRATE_KEY: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_MIGRATE_KEY || secrets.STAGING_MIGRATE_KEY }}
@@ -43,14 +43,22 @@ jobs:
           WALLET_STORAGE_URL: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_WALLET_STORAGE_URL || secrets.STAGING_WALLET_STORAGE_URL }}
           BSV_NETWORK: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_BSV_NETWORK || secrets.STAGING_BSV_NETWORK }}
           HTTP_PORT: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_HTTP_PORT || secrets.STAGING_HTTP_PORT }}
-      - name: "Deploy to Cloud Run"
+      - name: "Authenticate with GCP"
+        id: auth
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ env.CURRENT_BRANCH == 'production' && secrets.PROD_GCP_STORAGE_CREDS || secrets.STAGING_GCP_STORAGE_CREDS }}
+      - name: "Determine bucket region from Cloud Storage"
+        id: bucket
+        run: |
+          REGION=$(gcloud storage buckets describe gs://$GCP_BUCKET_NAME --format='value(location)' | tr '[:upper:]' '[:lower:]')
+          echo "Bucket $GCP_BUCKET_NAME is in region: $REGION"
+          echo "region=$REGION" >> "$GITHUB_OUTPUT"
       - uses: google-github-actions/deploy-cloudrun@v1
         with:
           metadata: "service.${{ env.CURRENT_BRANCH }}.yaml"
+          region: ${{ steps.bucket.outputs.region }}
       - name: "Deploy the notifier function"
         run: |
           cd notifier 
-          ./deploy${{ env.CURRENT_BRANCH == 'production' && 'Prod' || 'Staging' }}.sh ${{ env.GCP_BUCKET_NAME }}
+          ./deploy${{ env.CURRENT_BRANCH == 'production' && 'Prod' || 'Staging' }}.sh "$GCP_BUCKET_NAME"

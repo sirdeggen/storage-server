@@ -2,6 +2,7 @@
 set -euo pipefail
 
 GCP_BUCKET_NAME=$1
+echo "Deploying stagingNotifier to bucket: $GCP_BUCKET_NAME"
 
 BUCKET_REGION=$(gcloud storage buckets describe gs://$GCP_BUCKET_NAME --format="value(location)")
 echo "Bucket $GCP_BUCKET_NAME is in region: $BUCKET_REGION"
