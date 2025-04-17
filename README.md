@@ -11,7 +11,7 @@ This guide walks you through deploying **UHRP Storage Server** on Google Cloud
     
 -   An **HTTP Load Balancer** that fronts both the bucket (static files) and Cloud Run (dynamic API) behind a custom HTTPS domain.
     
--   A GitHub Actions workflow (`deploy.yaml`) that rebuilds and redeploys automatically whenever you push to the `master` (staging) or `production` branch.
+-   A GitHub Actions workflow (`deploy.yaml`) that rebuilds and redeploys automatically whenever you push to the `master` or `production` branch.
     
 
 > **Security note** The IAM roles in this tutorial are intentionally permissive to minimise friction. Feel free to tighten them once everything works.
@@ -161,8 +161,6 @@ This SA becomes the **runtime identity** for Cloud Run, so the bucket permission
 
 > The examples below use the **`STAGING_`** prefix. For a production deployment create the same secrets with `PROD_` instead and push to the `production` branch.
 
-dcf
-
 | Secret | What it's for | Example |
 | -- | -- | -- |
 | **STAGING_ADMIN_TOKEN** | Bearer token granting admin API calls (e.g., content migration) | `super‑secret‑admin‑token` |
@@ -179,7 +177,7 @@ dcf
 | **STAGING_NODE_ENV** | Node environment string passed to the app | `staging` or `production` |
 | **STAGING_PRICE_PER_GB_MO** | Monthly price (USD) per GB stored | `0.03` |
 | **STAGING_SERVER_PRIVATE_KEY** | 32‑byte hex private key used to sign on‑chain ops | `58d23bd395c55041c65d415357b524fc2f07802c58d23bd395c55041c65d4153` |
-| **STAGING_WALLET_STORAGE_URL** | URL of the MetaNet Desktop (wallet) storage node | `https://staging-storage.babbage.systems` |
+| **STAGING_WALLET_STORAGE_URL** | URL of the Toolbox Wallet storage server | `https://staging-storage.babbage.systems` |
 
 Add them in **GitHub Settings > Secrets and variables > Actions**.
 
