@@ -56,15 +56,27 @@ Only required for the few shell commands shown below. Everything else uses the C
 
 1.  **Storage > Buckets > Create bucket**.
     
-2.  **Name** `<unique‑bucket‑name>` (e.g. `my‑uhrp‑bucket`).
+2.  **Name**  `<unique‑bucket‑name>` (e.g. `my‑uhrp‑bucket`).
     
-3.  **Region** Select a _single_ region (e.g. `us‑west1`).
+3.  **Region**  Select a _single_ region (e.g. `us‑west1`).
+
+4.  **Storage class**  Choose **Autoclass**.  
+    GCS will now shift each object between **Standard** and **Nearline** automatically, giving you the lowest possible storage cost when access patterns change.
+
+5.  **Data protection**  Turn the extras **off**:  
+
+    - **Soft delete policy**  Unchecked 
+      → We don’t keep 7‑day recovery copies; deletes are immediate.
+      
+    - **Object versioning**  Unchecked 
     
-4.  **Access control** Default; make sure **Public access prevention** is **Off**.
+    - **Retention**  Unchecked
+
+6.  **Access control** Default; make sure **Public access prevention** is **Off**.
     
-5.  **Create**
+7.  **Create**
     
-6.  **Apply CORS rules**:
+8.  **Apply CORS rules**:
     
     ```bash
     gsutil cors set bucket-cors-config.json gs://<BUCKET_NAME>
