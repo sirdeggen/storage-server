@@ -77,9 +77,12 @@ Only required for the few shell commands shown below. Everything else uses the C
 7.  **Create**
     
 8.  **Apply CORS rules**:
+    Run these commands from a terminal in the root of your cloned storage‑server repository (e.g., your local shell or Cloud Shell).
     
     ```bash
-    gsutil cors set bucket-cors-config.json gs://<BUCKET_NAME>
+    gcloud auth login
+    gcloud config set project <id>
+    gsutil cors set bucket-cors-config.json gs://<your-bucket-name>
     ```
     
 `bucket-cors-config.json` is provided in the repo root; edit it if you need to restrict origins.
