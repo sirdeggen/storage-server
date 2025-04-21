@@ -1,4 +1,5 @@
 
+
 # UHRP Storage Server – Deployment Guide
 
 This guide walks you through deploying **UHRP Storage Server** on Google Cloud Platform (GCP) with continuous delivery via GitHub Actions. When you finish, you’ll have:
@@ -72,12 +73,12 @@ Only required for the few shell commands shown below. Everything else uses the C
     
     - **Retention**  Unchecked
 
-6.  **Access control** Default; make sure **Public access prevention** is **Off**.
+6.  **Access control**  Default; make sure **Public access prevention** is **Off**.
     
 7.  **Create**
     
 8.  **Apply CORS rules**:
-    Run these commands from a terminal in the root of your cloned storage‑server repository (e.g., your local shell or Cloud Shell).
+    Run these commands from a terminal in the root of your cloned storage‑server repository (e.g., your local shell or Cloud Shell).
     
     ```bash
     gcloud auth login
@@ -131,19 +132,19 @@ Replace `<your-bucket-name>` / `<your-project-name>` with your bucket & project.
 -   Create **IAM & Admin > Service accounts > Create** → `uhrp-github-deployer`.
     
 -   Grant roles:
-    
-    -   **Cloud Run Admin**
-
-	-	**Cloud Functions Admin**
-        
-    -   **Cloud Build Editor**
-        
-    -   **Artifact Registry Administrator**
-        
-    -   **Storage Object Admin**
-        
-    -   **Service Account User**
-        
+	    
+	- **Cloud Run Admin**
+		
+	- **Cloud Functions Admin**
+		        
+	- **Cloud Build Editor**
+		        
+	- **Artifact Registry Administrator**
+		        
+	- **Storage Object Admin**
+		        
+	-  **Service Account User**
+	        
 -   **Keys tab > Add key > JSON** – download and keep safe. You’ll paste this into a GitHub secret.
     
 
@@ -154,27 +155,45 @@ Replace `<your-bucket-name>` / `<your-project-name>` with your bucket & project.
 - Give it all of these roles:
 
 	- **Artifact Registry Administrator**
+
+  	- **Storage Bucket Viewer**
+ 
+  	- **Cloud Functions Admin**
 	    
-	-   **Cloud Run Admin**
+	- **Cloud Run Admin**
 	    
-	-   **Eventarc Admin**
+	- **Eventarc Admin**
 	    
-	-   **Logs Writer**
+	- **Logs Writer**
 	    
-	-   **Service Account Admin**
+	- **Service Account Admin**
 	    
-	-   **Service Account User**
+	- **Service Account User**
 	    
-	-   **Storage Object Admin**
+	- **Storage Object Admin**
     
 
-This SA becomes the **runtime identity** for Cloud Run, so the bucket permissions propagate automatically.
+This Service Account becomes the **runtime identity** for Cloud Run, so the bucket permissions propagate automatically.
+
+
+### 2.5 Create an Artifact Registry repository
+
+1. **Artifact Registry > Repositories > Create**
+
+2. **Name**  uhrp
+
+3. **Format**  Docker
+
+4. **Region**  same region as your bucket *(e.g., us‑west1)*
+
+> Note the host part of the repository URL (e.g., us‑west1-docker.pkg.dev).
+Use this as your GCR_HOST / STAGING_GCR_HOST / PROD_GCR_HOST secret value.
 
 ----------
 
 ## 3 Add GitHub repository secrets
 
-> The examples below use the **`STAGING_`** prefix. For a production deployment create the same secrets with `PROD_` instead and push to the `production` branch.
+> The examples below use the **`STAGING_`** prefix. For a production deployment, create the same secrets with `PROD_` instead and push to the `production` branch.
 
 | Secret | What it's for | Example |
 | -- | -- | -- |
